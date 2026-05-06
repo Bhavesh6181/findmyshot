@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FindMyShot
+
+A mobile-first photo finding app using face recognition. Photographers upload event photos, attendees upload a selfie to find all photos of themselves.
+
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Auth**: NextAuth v5 (Auth.js) with Google OAuth + MongoDB adapter
+- **Backend**: Python FastAPI, DeepFace (Facenet512), MongoDB
+- **Storage**: Cloudinary (photos), MongoDB Atlas (data + embeddings)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- MongoDB Atlas account
+- Cloudinary account
+- Google Cloud Console project
+
+### Frontend Setup
+
+```bash
+cd findmyshot
+npm install
+```
+
+Create `.env.local`:
+```
+BACKEND_URL=http://localhost:8000
+MONGODB_URI=your_mongodb_atlas_uri
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+AUTH_SECRET=openssl_rand_base64_32
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_client_secret
+NEXT_PUBLIC_APP_URL=http://localhost:3003
+PHOTOGRAPHER_EMAILS=photographer1@gmail.com,photographer2@gmail.com
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env`:
+```
+MONGO_URI=your_mongodb_atlas_uri
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
 
-## Learn More
+```bash
+uvicorn main:app --reload --port 8000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Vercel (Frontend)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Environment variables to add in Vercel Dashboard:
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `MONGODB_URI`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `PHOTOGRAPHER_EMAILS`
+- `NEXT_PUBLIC_APP_URL` (set to `https://yourapp.vercel.app`)
+- `BACKEND_URL` (set to your Render backend URL)
 
-## Deploy on Vercel
+### Render (Python Backend)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Environment variables to add in Render Dashboard:
+- `MONGO_URI`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `ALLOWED_ORIGINS` (e.g. `http://localhost:3003,https://your-frontend.vercel.app`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production Notes
+
+- Frontend serves optimized image formats (`AVIF/WebP`) and compression is enabled.
+- Backend enables GZip compression for larger API responses.
+- MongoDB indexes are auto-created on startup for event code and photo ID lookups.
+- Public events endpoint is cached (`s-maxage`) to reduce repeated DB reads.
+- Cloudinary uploads use automatic quality/format transformation for faster delivery.
+- Backend now exposes `GET /healthz` for deployment health checks.
+- Render config uses `gunicorn + uvicorn worker` for better process management.
+- Structured JSON request logs include `x-request-id` (also returned in response header).
+- Write APIs (`POST`/`DELETE`/processing) are rate-limited per IP.
+- Optional async face processing queue:
+  - Set `ASYNC_FACE_PROCESSING=true` (frontend env) to enqueue jobs.
+  - Track status via backend `GET /jobs/{job_id}`.
+
+## User Roles
+
+- **Photographer**: Email is in `PHOTOGRAPHER_EMAILS` env variable → access to `/photographer` dashboard
+- **User**: Everyone else → selfie upload at `/scan` → photo results at `/gallery`

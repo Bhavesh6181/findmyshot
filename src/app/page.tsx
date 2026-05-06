@@ -1,101 +1,95 @@
-import Image from "next/image";
+import Link from "next/link";
+import GoldButton from "@/components/ui/GoldButton";
+import { auth } from "@auth";
 
-export default function Home() {
+function ApertureIcon() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      className="text-gold"
+    >
+      {/* 6-blade aperture with stroke only */}
+      <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M24 4 L28 16 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <path d="M41.3 14 L30 18 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <path d="M41.3 34 L30 28 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <path d="M24 44 L20 32 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <path d="M6.7 34 L18 30 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      <path d="M6.7 14 L18 18 L24 24" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      {/* Inner aperture opening */}
+      <polygon
+        points="24,16 30.9,20 30.9,28 24,32 17.1,28 17.1,20"
+        stroke="currentColor"
+        strokeWidth="1"
+        fill="none"
+      />
+    </svg>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+export default async function LandingPage() {
+  const session = await auth();
+
+  return (
+    <main className="page-transition flex min-h-screen flex-col items-center justify-center bg-void px-6">
+      <div className="flex max-w-sm flex-col items-center gap-6 text-center">
+        {/* Aperture icon */}
+        <ApertureIcon />
+
+        {/* Brand name */}
+        <h2 className="font-display text-2xl tracking-wide text-ivory">
+          FindMyShot
+        </h2>
+
+        {/* Divider */}
+        <div className="h-px w-16 bg-gold/20" />
+
+        {/* Hero text */}
+        <h1 className="font-display text-4xl leading-tight text-ivory md:text-5xl">
+          You were there.
+        </h1>
+
+        {/* Subtext */}
+        <p className="font-sans text-sm tracking-wide text-muted md:text-base">
+          Find every photo of you from any event.
+        </p>
+
+        {/* Spacer */}
+        <div className="h-4" />
+
+        {/* Auth-aware CTA */}
+        {session?.user?.role === "photographer" ? (
+          <Link href="/photographer" className="w-full">
+            <GoldButton fullWidth>Go to Dashboard</GoldButton>
+          </Link>
+        ) : session?.user?.role === "user" ? (
+          <Link href="/scan" className="w-full">
+            <GoldButton fullWidth>Find My Photos</GoldButton>
+          </Link>
+        ) : (
+          <Link href="/login" className="w-full">
+            <GoldButton fullWidth>Get Started</GoldButton>
+          </Link>
+        )}
+
+        {/* Film strip decorative element */}
+        <div className="mt-8 flex items-center gap-2">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="h-1.5 w-6 rounded-sm bg-gold/10"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Footer note */}
+        <p className="mt-4 font-sans text-[11px] tracking-widest text-faded">
+          POWERED BY FACE RECOGNITION
+        </p>
+      </div>
+    </main>
   );
 }

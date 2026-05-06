@@ -27,6 +27,27 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+.env.*
+!.env.example
+backend/.env
+
+# python
+backend/venv/
+backend/__pycache__/
+venv/
+__pycache__/
+*.py[cod]
+
+# secrets and keys
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_dsa
+**/secrets.*
+**/credentials.*
 
 # vercel
 .vercel

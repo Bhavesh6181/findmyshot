@@ -1,0 +1,12 @@
+fastapi
+deepface
+cloudinary
+pymongo
+uvicorn
+gunicorn
+python-multipart
+numpy
+tf-keras
+python-dotenv
+requests
+httpx
