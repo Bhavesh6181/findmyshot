@@ -16,6 +16,8 @@ import { getMongoClient } from "@/lib/mongodb-client";
  */
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Vercel sets x-forwarded-* headers; Auth.js must trust the host or sign-in can 500.
+  trustHost: true,
   adapter: MongoDBAdapter(getMongoClient),
   providers: [
     Google({
