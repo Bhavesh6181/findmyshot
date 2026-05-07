@@ -1,7 +1,10 @@
 import { auth } from "./auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
+const oauthGoogleCallback = "/api/auth/callback/google";
+
+const authMiddleware = auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
@@ -29,6 +32,23 @@ export default auth((req) => {
   return NextResponse.next();
 });
 
+export default function middleware(req: NextRequest) {
+  // Google must redirect to exactly `/api/auth/callback/google`. Extra path
+  // segments cause Auth.js UnknownAction (e.g. mis-typed redirect URI in Cloud Console).
+  if (req.nextUrl.pathname.startsWith(`${oauthGoogleCallback}/`)) {
+    const url = req.nextUrl.clone();
+    url.pathname = oauthGoogleCallback;
+    return NextResponse.redirect(url);
+  }
+
+  return authMiddleware(req);
+}
+
 export const config = {
-  matcher: ["/photographer/:path*", "/scan/:path*", "/gallery/:path*"],
+  matcher: [
+    "/photographer/:path*",
+    "/scan/:path*",
+    "/gallery/:path*",
+    "/api/auth/callback/google/:path+",
+  ],
 };

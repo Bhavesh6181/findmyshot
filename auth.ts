@@ -8,7 +8,7 @@ import { getMongoClient } from "@/lib/mongodb-client";
  * 1. Go to console.cloud.google.com
  * 2. Create new project → APIs & Services → Credentials
  * 3. Create OAuth 2.0 Client ID → Web Application
- * 4. Authorized redirect URIs:
+ * 4. Authorized redirect URIs (exact path — no extra segments like /events):
  *    - http://localhost:3003/api/auth/callback/google
  *    - https://yourdomain.com/api/auth/callback/google
  * 5. Copy Client ID → AUTH_GOOGLE_ID
