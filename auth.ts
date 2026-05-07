@@ -15,9 +15,15 @@ import { getMongoClient } from "@/lib/mongodb-client";
  * 6. Copy Client Secret → AUTH_GOOGLE_SECRET
  */
 
+const trustHostExplicit =
+  process.env.AUTH_TRUST_HOST === "false" || process.env.AUTH_TRUST_HOST === "0"
+    ? false
+    : true;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Vercel sets x-forwarded-* headers; Auth.js must trust the host or sign-in can 500.
-  trustHost: true,
+  // Vercel / reverse proxies: Auth.js must trust Host / x-forwarded-* or OAuth routes 500 with UntrustedHost.
+  // See https://errors.authjs.dev#untrustedhost — also set AUTH_TRUST_HOST=true on Vercel Production.
+  trustHost: trustHostExplicit,
   adapter: MongoDBAdapter(getMongoClient),
   providers: [
     Google({
