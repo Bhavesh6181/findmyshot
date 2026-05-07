@@ -12,7 +12,8 @@ async def healthz():
     mongo_ok = False
     mongo_error = None
     try:
-        client = MongoClient(os.getenv("MONGO_URI"))
+        mongo_uri = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI")
+        client = MongoClient(mongo_uri)
         client.admin.command("ping")
         mongo_ok = True
     except Exception as exc:

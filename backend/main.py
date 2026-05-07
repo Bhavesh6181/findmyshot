@@ -30,7 +30,8 @@ cloudinary.config(
 @app.on_event("startup")
 async def startup_db_check():
     try:
-        client = MongoClient(os.getenv("MONGO_URI"))
+        mongo_uri = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI")
+        client = MongoClient(mongo_uri)
         client.admin.command("ping")
         ensure_indexes()
         print("MongoDB Atlas connected successfully.")

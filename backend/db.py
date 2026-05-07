@@ -6,9 +6,10 @@ from pymongo import MongoClient
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
+# Support both backend and frontend naming to avoid deployment misconfig errors.
+MONGO_URI = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI")
 if not MONGO_URI:
-    raise ValueError("MONGO_URI not found in environment!")
+    raise ValueError("Mongo URI not found. Set MONGO_URI or MONGODB_URI.")
 
 client = MongoClient(MONGO_URI)
 db = client["findmyshot"]
