@@ -1,12 +1,26 @@
 import { NextResponse } from "next/server";
 import { fetchBackend } from "@/lib/backend-url";
 
+async function extractBackendError(response: Response): Promise<string> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const payload = (await response.json()) as
+      | { detail?: string; error?: string }
+      | undefined;
+    return payload?.detail || payload?.error || `Backend error (${response.status})`;
+  }
+
+  const text = (await response.text()).trim();
+  return text ? text.replace(/^"+|"+$/g, "") : `Backend error (${response.status})`;
+}
+
 function isBackendUnavailableError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const message = error.message.toLowerCase();
   return (
     message.includes("fetch failed") ||
     message.includes("failed to fetch") ||
+    message.includes("aborted") ||
     message.includes("econnrefused") ||
     message.includes("localhost:8000")
   );
@@ -29,7 +43,8 @@ export async function GET(): Promise<NextResponse> {
     const response = await fetchBackend("/events", { cache: "no-store" });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch events from backend");
+      const backendError = await extractBackendError(response);
+      return NextResponse.json({ error: backendError }, { status: response.status });
     }
 
     const data = await response.json();
@@ -89,11 +104,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      return NextResponse.json(
-        { error: errorText },
-        { status: response.status }
-      );
+      const backendError = await extractBackendError(response);
+      return NextResponse.json({ error: backendError }, { status: response.status });
     }
 
     const data = await response.json();

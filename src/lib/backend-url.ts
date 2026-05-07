@@ -14,20 +14,25 @@ export async function fetchBackend(path: string, init?: RequestInit): Promise<Re
   }
 
   let lastError: unknown = null;
-  const timeoutMs = 15000;
+  // Render free instances can cold start slowly, so keep a larger timeout.
+  const timeoutMs = 45000;
+  const maxAttempts = 2;
   for (const baseUrl of candidates) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(`${baseUrl}${path}`, {
-        ...init,
-        signal: init?.signal ?? controller.signal,
-      });
-      return response;
-    } catch (error) {
-      lastError = error;
-    } finally {
-      clearTimeout(timeout);
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(`${baseUrl}${path}`, {
+          ...init,
+          signal: init?.signal ?? controller.signal,
+        });
+        return response;
+      } catch (error) {
+        lastError = error;
+        if (attempt === maxAttempts) break;
+      } finally {
+        clearTimeout(timeout);
+      }
     }
   }
   throw lastError ?? new Error("Failed to connect to backend");

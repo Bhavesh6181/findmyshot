@@ -25,6 +25,8 @@ async def add_event(payload: dict, request: Request):
             raise HTTPException(status_code=400, detail="Missing name or code")
         event = create_event(name, code)
         return {"success": True, "event": event, "requestId": getattr(request.state, "request_id", None)}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     except HTTPException:
         raise
     except Exception as exc:
