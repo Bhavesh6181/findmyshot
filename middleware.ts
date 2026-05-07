@@ -9,6 +9,11 @@ const authMiddleware = auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
+  // Skip all auth routes to avoid any accidental callback/action mutation.
+  if (pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
   // Not logged in → redirect to /login (except public pages)
   if (!session && pathname !== "/login" && pathname !== "/") {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -50,6 +55,8 @@ export const config = {
     "/photographer/:path*",
     "/scan/:path*",
     "/gallery/:path*",
-    "/api/auth/callback/google/:path+",
+    "/api/events/:path*",
+    "/api/upload/:path*",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
   ],
 };

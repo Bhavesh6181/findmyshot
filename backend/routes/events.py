@@ -13,7 +13,7 @@ class CreateEventBody(BaseModel):
     """JSON body must be bound explicitly; bare `dict` params do not reliably read the request body."""
 
     name: str = Field(..., min_length=1)
-    code: str = Field(..., min_length=1, max_length=32)
+    code: str = Field(..., min_length=1, max_length=8, pattern=r"^[A-Za-z0-9]+$")
 
 
 @router.get("/events")

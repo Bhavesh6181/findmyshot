@@ -1,32 +1,48 @@
-from deepface import DeepFace
-from db import get_event_photos
+import cv2
 import numpy as np
+from insightface.app import FaceAnalysis
 
-print("Loading Facenet512 model...")
-DeepFace.build_model("Facenet512")
-print("Model ready")
+from db import get_event_photos
+
+print("Loading InsightFace model (buffalo_sc)...")
+app_model = FaceAnalysis(
+    name="buffalo_sc",
+    providers=["CPUExecutionProvider"],
+)
+app_model.prepare(ctx_id=-1, det_size=(320, 320))
+print("InsightFace model ready")
+
 
 def get_embedding(img_path: str):
-    result = DeepFace.represent(
-        img_path=img_path,
-        model_name="Facenet512",
-        enforce_detection=False
-    )
-    return result[0]["embedding"]
+    img = cv2.imread(img_path)
+    if img is None:
+        return None
+    faces = app_model.get(img)
+    if not faces:
+        return None
+    return faces[0].embedding.tolist()
+
 
 def get_face_embeddings(img_path: str):
-    result = DeepFace.represent(
-        img_path=img_path,
-        model_name="Facenet512",
-        enforce_detection=False
-    )
-    return [face["embedding"] for face in result]
+    img = cv2.imread(img_path)
+    if img is None:
+        return []
+    faces = app_model.get(img)
+    return [face.embedding.tolist() for face in faces]
+
 
 def cosine_similarity(a, b):
     a, b = np.array(a), np.array(b)
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    denom = np.linalg.norm(a) * np.linalg.norm(b)
+    if denom == 0:
+        return 0.0
+    return float(np.dot(a, b) / denom)
 
-def find_matches(user_embedding, event_id: str, threshold=0.7):
+
+def find_matches(user_embedding, event_id: str, threshold=0.4):
+    if not user_embedding:
+        return []
+
     photos = get_event_photos(event_id)
     matches = []
 
@@ -34,12 +50,13 @@ def find_matches(user_embedding, event_id: str, threshold=0.7):
         for face_emb in photo.get("face_embeddings", []):
             score = cosine_similarity(user_embedding, face_emb)
             if score >= threshold:
-                matches.append({
-                    "url": photo["cloudinary_url"],
-                    "cloudinaryId": photo["cloudinary_id"],
-                    "confidence": round(float(score), 2)
-                })
-                break  # ek match mila, next photo
+                matches.append(
+                    {
+                        "url": photo["cloudinary_url"],
+                        "cloudinaryId": photo["cloudinary_id"],
+                        "confidence": round(score, 2),
+                    }
+                )
+                break
 
-    matches.sort(key=lambda x: x["confidence"], reverse=True)
-    return matches
+    return sorted(matches, key=lambda x: x["confidence"], reverse=True)
