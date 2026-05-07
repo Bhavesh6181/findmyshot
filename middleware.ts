@@ -1,9 +1,10 @@
 import { auth } from "./auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server";
 
 const oauthGoogleCallback = "/api/auth/callback/google";
 
+// `auth()` overlaps with the App Route handler overload; assert Next.js middleware shape.
 const authMiddleware = auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
@@ -30,9 +31,9 @@ const authMiddleware = auth((req) => {
   }
 
   return NextResponse.next();
-});
+}) as unknown as NextMiddleware;
 
-export default function middleware(req: NextRequest) {
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
   // Google must redirect to exactly `/api/auth/callback/google`. Extra path
   // segments cause Auth.js UnknownAction (e.g. mis-typed redirect URI in Cloud Console).
   if (req.nextUrl.pathname.startsWith(`${oauthGoogleCallback}/`)) {
@@ -41,7 +42,7 @@ export default function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return authMiddleware(req);
+  return authMiddleware(req, event);
 }
 
 export const config = {
