@@ -1,17 +1,48 @@
 import { NextResponse } from "next/server";
 import { fetchBackend } from "@/lib/backend-url";
 
+function normalizeFastApiDetail(detail: unknown): string | null {
+  if (typeof detail === "string" && detail.trim()) return detail.trim();
+  if (Array.isArray(detail)) {
+    const parts = detail.map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object" && "msg" in item) {
+        const m = (item as { msg?: unknown }).msg;
+        return typeof m === "string" ? m : JSON.stringify(item);
+      }
+      return typeof item === "object" ? JSON.stringify(item) : String(item);
+    });
+    const joined = parts.filter(Boolean).join("; ");
+    return joined || null;
+  }
+  if (detail && typeof detail === "object" && "message" in detail) {
+    const m = (detail as { message?: unknown }).message;
+    return typeof m === "string" ? m : null;
+  }
+  return null;
+}
+
 async function extractBackendError(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
-  if (contentType.includes("application/json")) {
-    const payload = (await response.json()) as
-      | { detail?: string; error?: string }
-      | undefined;
-    return payload?.detail || payload?.error || `Backend error (${response.status})`;
+  const raw = await response.text();
+  const trimmed = raw.trim();
+
+  if (contentType.includes("application/json") && trimmed) {
+    try {
+      const payload = JSON.parse(trimmed) as {
+        detail?: unknown;
+        error?: unknown;
+      };
+      const fromDetail = normalizeFastApiDetail(payload?.detail);
+      if (fromDetail) return fromDetail;
+      if (typeof payload?.error === "string" && payload.error.trim())
+        return payload.error.trim();
+    } catch {
+      return trimmed.replace(/^"+|"+$/g, "");
+    }
   }
 
-  const text = (await response.text()).trim();
-  return text ? text.replace(/^"+|"+$/g, "") : `Backend error (${response.status})`;
+  return trimmed ? trimmed.replace(/^"+|"+$/g, "") : `Backend error (${response.status})`;
 }
 
 function isBackendUnavailableError(error: unknown): boolean {

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, Field
 import cloudinary.uploader
 
 from db import get_all_events, create_event, get_event_detail, delete_event as delete_event_db
@@ -6,6 +7,13 @@ from services.rate_limit import enforce_write_rate_limit
 
 
 router = APIRouter(tags=["events"])
+
+
+class CreateEventBody(BaseModel):
+    """JSON body must be bound explicitly; bare `dict` params do not reliably read the request body."""
+
+    name: str = Field(..., min_length=1)
+    code: str = Field(..., min_length=1, max_length=32)
 
 
 @router.get("/events")
@@ -17,10 +25,10 @@ async def list_events(skip: int = 0, limit: int = 100):
 
 
 @router.post("/events", dependencies=[Depends(enforce_write_rate_limit)])
-async def add_event(payload: dict, request: Request):
+async def add_event(body: CreateEventBody, request: Request):
     try:
-        name = payload.get("name")
-        code = payload.get("code")
+        name = body.name.strip()
+        code = body.code.strip().upper()
         if not name or not code:
             raise HTTPException(status_code=400, detail="Missing name or code")
         event = create_event(name, code)
