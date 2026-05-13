@@ -14,8 +14,15 @@ const authMiddleware = auth((req) => {
     return NextResponse.next();
   }
 
-  // Not logged in → redirect to /login (except public pages)
+  // Not logged in → protect private pages and API routes
   if (!session && pathname !== "/login" && pathname !== "/") {
+    // API routes should get a 401 JSON response, not a redirect to /login
+    if (pathname.startsWith("/api/")) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -50,13 +57,16 @@ export default function middleware(req: NextRequest, event: NextFetchEvent) {
   return authMiddleware(req, event);
 }
 
+// IMPORTANT: API proxy routes (/api/events, /api/upload, /api/photos, /api/match)
+// are EXCLUDED from the matcher so that NextAuth's auth() wrapper never intercepts them.
+// These routes proxy to the Python backend server-side and handle their own auth if needed.
+// Previously, the catch-all pattern was matching these paths, causing NextAuth to return
+// a generic 400 "Bad request." before the route handler could execute.
 export const config = {
   matcher: [
     "/photographer/:path*",
     "/scan/:path*",
     "/gallery/:path*",
-    "/api/events/:path*",
-    "/api/upload/:path*",
-    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

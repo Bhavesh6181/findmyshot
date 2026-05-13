@@ -60,6 +60,7 @@ function isBackendUnavailableError(error: unknown): boolean {
 export async function GET(): Promise<NextResponse> {
   try {
     const backendUrl = process.env.BACKEND_URL;
+    console.log("[GET /api/events] BACKEND_URL:", backendUrl ? "SET" : "MISSING");
 
     if (!backendUrl) {
       // Mock data when no backend configured
@@ -101,6 +102,8 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = await request.json();
     const { name, code } = body as { name: string; code: string };
+    console.log("[POST /api/events] BACKEND_URL:", process.env.BACKEND_URL ? "SET" : "MISSING");
+    console.log("[POST /api/events] body:", JSON.stringify({ name, code }));
 
     if (!name || !code) {
       return NextResponse.json(
@@ -136,6 +139,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     if (!response.ok) {
       const backendError = await extractBackendError(response);
+      console.error("[POST /api/events] Backend error:", response.status, backendError);
       return NextResponse.json({ error: backendError }, { status: response.status });
     }
 

@@ -16,3 +16,5 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://findmyshot-bhavesh.vercel.app,http://localhost:3003"
