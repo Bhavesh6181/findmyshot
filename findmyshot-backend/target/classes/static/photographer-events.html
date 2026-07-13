@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LuminaLens - My Events</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#f8f9ff",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#5b598c",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed": "#ffddb8",
+                      "tertiary-fixed": "#e2dfff",
+                      "surface-variant": "#d5e3fc",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#dce9ff",
+                      "inverse-surface": "#233144",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#684000",
+                      "error": "#ba1a1a",
+                      "primary-container": "#1e1b4b",
+                      "on-primary-fixed-variant": "#444173",
+                      "tertiary-container": "#171069",
+                      "on-primary-fixed": "#181445",
+                      "surface-container-low": "#eff4ff",
+                      "on-tertiary-fixed": "#100563",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#c4c1fb",
+                      "on-primary-container": "#8683ba",
+                      "primary": "#070235",
+                      "on-background": "#0d1c2e",
+                      "on-tertiary-container": "#8180d7",
+                      "surface-dim": "#ccdbf3",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "outline-variant": "#c8c5d0",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#c4c1fb",
+                      "primary-fixed": "#e3dfff",
+                      "on-surface": "#0d1c2e",
+                      "outline": "#787680",
+                      "tertiary": "#04003b",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "tertiary-fixed-dim": "#c3c0ff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "background": "#f8f9ff",
+                      "surface": "#f8f9ff",
+                      "on-secondary-fixed": "#2a1700",
+                      "on-tertiary-fixed-variant": "#3e3c8f",
+                      "surface-container-highest": "#d5e3fc",
+                      "secondary-container": "#fea619",
+                      "surface-container": "#e6eeff",
+                      "on-surface-variant": "#47464f",
+                      "secondary": "#855300"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit-sm": "8px",
+                      "unit-lg": "24px",
+                      "container-max": "1280px",
+                      "unit-md": "16px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "unit-xl": "48px",
+                      "unit-xs": "4px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .nocturnal-gradient {
+            background: linear-gradient(135deg, #070235 0%, #1e1b4b 100%);
+        }
+        .gold-glow:hover {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-bright text-on-surface min-h-screen pb-32">
+<!-- Top AppBar (from Shared Components) -->
+<header class="bg-surface-bright dark:bg-surface-container-lowest shadow-sm docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-unit-sm">
+<div class="flex items-center gap-unit-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="camera">camera</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">LuminaLens</h1>
+</div>
+<div class="flex items-center gap-unit-md">
+<button class="hidden md:flex font-label-md text-label-md text-primary px-unit-md py-unit-xs rounded-full hover:bg-surface-container-low transition-all">My Events</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border-2 border-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a sophisticated photographer in a minimalist studio. The lighting is soft and warm, with high-end camera equipment subtly visible in the background. The aesthetic is clean, corporate modern, and exudes quiet confidence with a palette of deep indigo and soft whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIqj4Sub3JZKb9cCDbXBKsJOhF7GK_Vl7unLXk3JbTkzu2h2Ob11gyYLDL0o4DNO-hfYAExlux_McT-HXCQyLkLdPlU062x2mGjL7Og8oAh70EsMrOFCeuzGKL_v5Digq6HzEDliBGuKJgXGA-noHRNCdY7bjF5a_D5opCFe2IEfeZFTvmW_6VXp6pcRx7gnkN1RJXRh6d_J-vNESPcd5R7aC2UxNKXzhH61wWaqAlbtG3kH7VZWx9KA"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-unit-xl">
+<!-- Header Section with FAB-like behavior for Desktop -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-unit-xl gap-unit-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">My Events</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your photography assignments and client galleries.</p>
+</div>
+<button class="flex items-center justify-center gap-unit-sm bg-secondary-container text-primary font-label-md text-label-md px-unit-lg py-unit-md rounded-xl shadow-lg hover:scale-105 transition-transform active:scale-95" onclick="toggleEmptyState()">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                Create New Event
+            </button>
+</div>
+<!-- Event List Canvas (Bento-ish Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter" id="events-grid">
+<!-- Event Card 1 -->
+<div class="glass-card p-unit-lg rounded-xl flex flex-col gap-unit-md shadow-sm border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-unit-sm">
+<span class="bg-primary-container text-on-primary-fixed-variant text-label-sm font-label-sm px-unit-sm py-1 rounded-full">#TECH24</span>
+</div>
+<div class="flex flex-col gap-1 mt-unit-xs">
+<h3 class="font-headline-md text-headline-md text-primary truncate">Tech Summit 2024</h3>
+<div class="flex items-center gap-unit-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-sm text-label-sm">Oct 12, 2024</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-unit-md rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-unit-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="photo_library">photo_library</span>
+<span class="font-body-md text-body-md font-semibold text-primary">450 photos</span>
+</div>
+<div class="h-1.5 w-24 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container w-[75%]"></div>
+</div>
+</div>
+<div class="flex items-center gap-unit-sm mt-auto pt-unit-sm">
+<button class="flex-1 flex items-center justify-center gap-unit-xs bg-primary text-on-primary font-label-md text-label-md py-unit-sm rounded-lg hover:bg-primary-container transition-colors" title="View/Manage Photos">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+                        Manage
+                    </button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline text-primary rounded-lg hover:bg-surface-container transition-colors" title="Add More Photos">
+<span class="material-symbols-outlined" data-icon="add_a_photo">add_a_photo</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-error/30 text-error rounded-lg hover:bg-error-container/20 transition-colors" onclick="openDeleteModal('Tech Summit 2024')" title="Delete Event">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="glass-card p-unit-lg rounded-xl flex flex-col gap-unit-md shadow-sm border-outline-variant/30 hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-unit-sm">
+<span class="bg-primary-container text-on-primary-fixed-variant text-label-sm font-label-sm px-unit-sm py-1 rounded-full">#JENKS24</span>
+</div>
+<div class="flex flex-col gap-1 mt-unit-xs">
+<h3 class="font-headline-md text-headline-md text-primary truncate">Jenkins Wedding</h3>
+<div class="flex items-center gap-unit-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-sm text-label-sm">Sep 28, 2024</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-unit-md rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-unit-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="photo_library">photo_library</span>
+<span class="font-body-md text-body-md font-semibold text-primary">1,240 photos</span>
+</div>
+<div class="h-1.5 w-24 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container w-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-unit-sm mt-auto pt-unit-sm">
+<button class="flex-1 flex items-center justify-center gap-unit-xs bg-primary text-on-primary font-label-md text-label-md py-unit-sm rounded-lg hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+                        Manage
+                    </button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline text-primary rounded-lg hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="add_a_photo">add_a_photo</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-error/30 text-error rounded-lg hover:bg-error-container/20 transition-colors" onclick="openDeleteModal('Jenkins Wedding')">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Event Card 3 (Emptyish/New) -->
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-unit-lg flex flex-col items-center justify-center text-center gap-unit-md bg-surface-container-low/30 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center text-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="post_add">post_add</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary">Schedule New Shoot</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Reserve a code for an upcoming event</p>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default) -->
+<div class="hidden flex-col items-center justify-center py-unit-xl text-center max-w-md mx-auto" id="empty-state">
+<div class="w-48 h-48 mb-unit-lg relative">
+<div class="absolute inset-0 bg-secondary-container/20 rounded-full blur-3xl"></div>
+<div class="relative flex items-center justify-center w-full h-full text-primary-container">
+<span class="material-symbols-outlined text-[96px]" data-icon="no_photography">no_photography</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-unit-sm">No Events Found</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-unit-lg">Capture your first project. Once you create an event, it will appear here for easy management and photo uploads.</p>
+<button class="bg-secondary-container text-primary font-label-md text-label-md px-unit-xl py-unit-md rounded-xl gold-glow transition-all">
+                Create Your First Event
+            </button>
+</div>
+</main>
+<!-- Delete Confirmation Modal -->
+<div class="fixed inset-0 z-[100] hidden items-center justify-center p-margin-mobile" id="delete-modal">
+<div class="absolute inset-0 bg-[#0d1c2e]/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+<div class="relative glass-card w-full max-w-sm rounded-2xl p-unit-lg shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="w-12 h-12 bg-error-container text-error rounded-full flex items-center justify-center mb-unit-md">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-unit-xs">Delete Event?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-unit-lg" id="delete-modal-text">Are you sure you want to delete "<span class="font-semibold" id="event-name-placeholder"></span>"? This action cannot be undone.</p>
+<div class="flex flex-col gap-unit-sm">
+<button class="w-full bg-error text-on-error font-label-md text-label-md py-unit-md rounded-xl active:scale-95 transition-transform" onclick="closeDeleteModal()">
+                    Yes, Delete Event
+                </button>
+<button class="w-full bg-surface-container-highest text-on-surface font-label-md text-label-md py-unit-md rounded-xl" onclick="closeDeleteModal()">
+                    Cancel
+                </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar (from Shared Components) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface-container dark:bg-surface-container-high shadow-[0_-4px_6px_-1px_rgba(30,27,75,0.04)] shadow-lg rounded-t-xl md:hidden">
+<div class="flex justify-around items-center px-margin-mobile pb-safe pt-unit-sm h-20">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-unit-lg py-unit-xs transition-transform duration-200 ease-in-out active:scale-90">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-unit-lg py-unit-xs transition-transform duration-200 ease-in-out active:scale-90">
+<span class="material-symbols-outlined" data-icon="event" style="font-variation-settings: 'FILL' 1;">event</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-unit-lg py-unit-xs transition-transform duration-200 ease-in-out active:scale-90">
+<span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span>
+<span class="font-label-sm text-label-sm">Uploads</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-unit-lg py-unit-xs transition-transform duration-200 ease-in-out active:scale-90">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</button>
+</div>
+</nav>
+<script>
+        function openDeleteModal(eventName) {
+            const modal = document.getElementById('delete-modal');
+            const placeholder = document.getElementById('event-name-placeholder');
+            placeholder.textContent = eventName;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleEmptyState() {
+            const grid = document.getElementById('events-grid');
+            const empty = document.getElementById('empty-state');
+            
+            if (grid.classList.contains('hidden')) {
+                grid.classList.remove('hidden');
+                grid.classList.add('grid');
+                empty.classList.add('hidden');
+                empty.classList.remove('flex');
+            } else {
+                grid.classList.add('hidden');
+                grid.classList.remove('grid');
+                empty.classList.remove('hidden');
+                empty.classList.add('flex');
+            }
+        }
+
+        // Simple scale effect for interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+    </script>
+</body></html>

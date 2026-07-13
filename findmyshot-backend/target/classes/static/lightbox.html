@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindMyShot - Premium Lightbox</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2a1700",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "on-background": "#0d1c2e",
+                        "inverse-primary": "#c4c1fb",
+                        "surface-dim": "#ccdbf3",
+                        "primary-fixed-dim": "#c4c1fb",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#fea619",
+                        "on-primary-container": "#8683ba",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "on-secondary-container": "#684000",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#e6eeff",
+                        "primary-container": "#1e1b4b",
+                        "secondary-fixed": "#ffddb8",
+                        "on-surface": "#0d1c2e",
+                        "inverse-surface": "#233144",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed": "#e3dfff",
+                        "tertiary": "#04003b",
+                        "on-surface-variant": "#47464f",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3e3c8f",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#444173",
+                        "surface-variant": "#d5e3fc",
+                        "secondary": "#855300",
+                        "on-tertiary-fixed": "#100563",
+                        "surface-container-highest": "#d5e3fc",
+                        "outline-variant": "#c8c5d0",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#5b598c",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "tertiary-fixed": "#e2dfff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "outline": "#787680",
+                        "on-tertiary-container": "#8180d7",
+                        "tertiary-container": "#171069",
+                        "background": "#f8f9ff",
+                        "on-primary-fixed": "#181445",
+                        "primary": "#070235"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit-sm": "8px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "unit-xl": "48px",
+                        "container-max": "1280px",
+                        "unit-md": "16px",
+                        "unit-xs": "4px",
+                        "unit-lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .gold-glow {
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(30, 27, 75, 0) 70%);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-primary-container text-on-primary-fixed overflow-hidden selection:bg-secondary-container">
+
+    <!-- Immersive Lightbox Overlay -->
+    <div class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-primary-container animate-fade-in">
+        
+        <!-- Subtle Gold Depth Glow -->
+        <div class="gold-glow absolute inset-0 pointer-events-none"></div>
+
+        <!-- Header / Close Button -->
+        <div class="fixed top-0 left-0 w-full p-unit-lg flex justify-between items-center z-[110]">
+            <div class="flex items-center gap-unit-sm"><div class="flex items-center gap-unit-xs"><span class="material-symbols-outlined text-white" data-icon="camera_front">camera_front</span><span class="font-headline-md text-headline-md font-bold text-white">FindMyShot</span></div></div>
+            <button class="w-12 h-12 flex items-center justify-center rounded-full glass-nav text-on-primary-fixed hover:bg-secondary-container/20 transition-all active:scale-95">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="relative w-full max-w-[1440px] h-full flex items-center justify-center px-unit-lg md:px-margin-desktop">
+            
+            <!-- Previous Button (Desktop) -->
+            <button class="hidden md:flex absolute left-margin-desktop z-[110] w-14 h-14 items-center justify-center rounded-full glass-nav text-secondary-container hover:scale-110 active:scale-90 transition-all border-secondary-container/40">
+                <span class="material-symbols-outlined text-[32px]">chevron_left</span>
+            </button>
+
+            <!-- Photo Container -->
+            <div class="relative flex flex-col items-center justify-center max-h-[75vh] w-full md:w-auto">
+                
+                <!-- Match Confidence Badge -->
+                <div class="absolute -top-4 z-[110] flex items-center gap-unit-xs px-4 py-1.5 rounded-full bg-primary-container/80 border border-secondary-container text-secondary-container font-label-md text-label-md backdrop-blur-md shadow-lg shadow-black/40">
+                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    98% Match
+                </div>
+
+                <!-- Main Event Image -->
+                <div class="relative group cursor-zoom-in">
+                    <img src="https://lh3.googleusercontent.com/aida/AP1WRLu1-4AqOCsg6zIiRLm1ktJFfCNsccGGgdbGKLmacfxpXZFH-eqTUZQ_d1KYIylSaHy1fHR9Cu4E17qNJ9n1PuG_XBQW3vN0YRHNWAoALqt6lNjaQaDx_SO7F7Rdic6jw58WVvxGtIm6ixZW3_ssjOnZyLwUk1iFTm2XXhNZ-4STeihqU-kVWNWqkmt3giCp7t7l2aGFp_h-tIgkPSSNAlOZ-AmAYc9Ulxr31kJFnJwfJslLt3DenwH_MSY" class="max-h-[70vh] md:max-h-[80vh] w-auto object-contain rounded-lg shadow-2xl ring-1 ring-white/10" alt="Tech summit attendee portrait">
+                </div>
+
+                <!-- Mobile Navigation Overlays (Invisible areas for tapping) -->
+                <div class="md:hidden absolute inset-0 flex">
+                    <div class="w-1/2 h-full" onclick="console.log('prev')"></div>
+                    <div class="w-1/2 h-full" onclick="console.log('next')"></div>
+                </div>
+            </div>
+
+            <!-- Next Button (Desktop) -->
+            <button class="hidden md:flex absolute right-margin-desktop z-[110] w-14 h-14 items-center justify-center rounded-full glass-nav text-secondary-container hover:scale-110 active:scale-90 transition-all border-secondary-container/40">
+                <span class="material-symbols-outlined text-[32px]">chevron_right</span>
+            </button>
+        </div>
+
+        <!-- Floating Action Bar -->
+        <div class="fixed bottom-margin-desktop flex items-center justify-center w-full z-[120] px-margin-mobile hidden">
+            <div class="flex items-center gap-unit-lg px-unit-lg py-unit-sm rounded-full glass-nav shadow-2xl shadow-black/60 border border-white/5">
+                
+                <button class="flex flex-col items-center gap-1 group">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-full group-hover:bg-secondary-container/10 transition-colors">
+                        <span class="material-symbols-outlined text-white/80 group-hover:text-secondary-container transition-colors">favorite</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-white/60">Favorite</span>
+                </button>
+
+                <div class="w-[1px] h-8 bg-white/10"></div>
+
+                <button class="flex flex-col items-center gap-1 group">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-secondary-container text-on-secondary-fixed shadow-lg shadow-secondary-container/20 group-hover:scale-105 transition-transform active:scale-95">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">download</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-secondary-container font-bold">Download</span>
+                </button>
+
+                <div class="w-[1px] h-8 bg-white/10"></div>
+
+                <button class="flex flex-col items-center gap-1 group">
+                    <div class="w-10 h-10 flex items-center justify-center rounded-full group-hover:bg-secondary-container/10 transition-colors">
+                        <span class="material-symbols-outlined text-white/80 group-hover:text-secondary-container transition-colors">share</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-white/60">Share</span>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Secondary Info (Optional) -->
+        <div class="fixed bottom-4 text-center w-full md:block hidden">
+            <p class="font-body-md text-body-md text-white/40">Global Tech Summit 2024 • Main Stage Hall • Image 42 of 156</p>
+        </div>
+
+    </div>
+
+    <!-- Background UI Blur (Simulating content behind the lightbox) -->
+    <div class="fixed inset-0 -z-10 opacity-30 grayscale blur-xl pointer-events-none">
+        <div class="grid grid-cols-4 gap-4 p-4">
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+            <div class="bg-surface h-64 rounded-xl"></div>
+        </div>
+    </div>
+
+    <script>
+        // Micro-interactions for the lightbox
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                console.log('Close lightbox');
+                // Logic to close would go here
+            }
+        });
+
+        // Simple parallax movement on hover
+        const photoContainer = document.querySelector('.group');
+        if (photoContainer) {
+            photoContainer.addEventListener('mousemove', (e) => {
+                const { left, top, width, height } = photoContainer.getBoundingClientRect();
+                const x = (e.clientX - left) / width - 0.5;
+                const y = (e.clientY - top) / height - 0.5;
+                
+                const img = photoContainer.querySelector('img');
+                img.style.transform = `perspective(1000px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg) scale(1.02)`;
+            });
+
+            photoContainer.addEventListener('mouseleave', () => {
+                const img = photoContainer.querySelector('img');
+                img.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
+            });
+        }
+    </script>
+
+
+
+</body></html>

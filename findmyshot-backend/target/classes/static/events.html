@@ -1,0 +1,280 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FindMyShot | Join an Event</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#181445",
+                    "primary": "#070235",
+                    "tertiary-container": "#171069",
+                    "background": "#f8f9ff",
+                    "on-tertiary-container": "#8180d7",
+                    "surface-container-low": "#eff4ff",
+                    "outline": "#787680",
+                    "tertiary-fixed": "#e2dfff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "surface-bright": "#f8f9ff",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#5b598c",
+                    "secondary": "#855300",
+                    "on-tertiary-fixed": "#100563",
+                    "surface-container-highest": "#d5e3fc",
+                    "outline-variant": "#c8c5d0",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#444173",
+                    "surface-variant": "#d5e3fc",
+                    "tertiary": "#04003b",
+                    "on-surface-variant": "#47464f",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#3e3c8f",
+                    "surface-container-high": "#dce9ff",
+                    "primary-fixed": "#e3dfff",
+                    "surface-container": "#e6eeff",
+                    "primary-container": "#1e1b4b",
+                    "secondary-fixed": "#ffddb8",
+                    "on-surface": "#0d1c2e",
+                    "inverse-surface": "#233144",
+                    "secondary-container": "#fea619",
+                    "on-primary-container": "#8683ba",
+                    "tertiary-fixed-dim": "#c3c0ff",
+                    "on-secondary-container": "#684000",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#c4c1fb",
+                    "surface-dim": "#ccdbf3",
+                    "primary-fixed-dim": "#c4c1fb",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f8f9ff",
+                    "on-background": "#0d1c2e",
+                    "brand-gold": "#e2b13c",
+                    "brand-indigo": "#1e1b4b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit-xs": "4px",
+                    "unit-lg": "24px",
+                    "unit-xl": "48px",
+                    "container-max": "1280px",
+                    "unit-md": "16px",
+                    "margin-desktop": "40px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "unit-sm": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .event-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(226, 177, 60, 0.2);
+        }
+        .custom-glow:focus {
+            box-shadow: 0 0 0 2px rgba(226, 177, 60, 0.3);
+        }
+        .nocturnal-gradient {
+            background: linear-gradient(135deg, #1e1b4b 0%, #070235 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col selection:bg-brand-gold/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 shadow-sm flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 bg-primary"><div class="flex items-center gap-unit-sm"><div class="flex items-center gap-3"><div class="flex items-center gap-unit-xs"><span class="material-symbols-outlined text-white" data-icon="camera_front">camera_front</span><span class="font-headline-md text-headline-md font-bold text-white">FindMyShot</span></div></div></div><nav class="hidden md:flex gap-unit-lg items-center"><a href="#" class="font-label-md text-label-md text-white font-bold">Join Event</a><a href="#" class="font-label-md text-label-md text-white/80 hover:bg-white/10 transition-colors px-3 py-1 rounded-lg">Gallery</a><a href="#" class="font-label-md text-label-md text-white/80 hover:bg-white/10 transition-colors px-3 py-1 rounded-lg">My Account</a></nav><button class="md:hidden p-2 rounded-full hover:bg-white/10"><span class="material-symbols-outlined text-white" data-icon="menu">menu</span></button></header>
+<!-- Main Content -->
+<main class="flex-grow pt-24 pb-unit-xl px-margin-mobile max-w-container-max mx-auto w-full pb-32">
+<!-- Hero Section -->
+<div class="mb-unit-xl text-center md:text-left">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-2">Join an Event</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Find your professional photos instantly. Select an active event nearby or enter your unique code below.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Section A: Active Events (Bento Grid Style) -->
+<section class="lg:col-span-8">
+<div class="flex items-center justify-between mb-unit-md">
+<h3 class="font-label-md text-label-md uppercase tracking-widest text-outline">Active Events</h3>
+<span class="flex items-center gap-1 text-secondary font-semibold text-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+                        Live Nearby
+                    </span>
+</div>
+<!-- Event Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-unit-md" id="event-list">
+<!-- Card 1 -->
+<button class="event-card-hover group text-left p-6 nocturnal-gradient rounded-xl border border-brand-gold/20 transition-all duration-300 relative overflow-hidden flex flex-col justify-between h-48">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-brand-gold" data-icon="celebration">celebration</span>
+</div>
+<div>
+<span class="text-brand-gold font-label-sm text-label-sm uppercase tracking-tighter mb-2 block">Gala Night</span>
+<h4 class="text-white font-headline-md text-headline-md leading-tight">Metropolitan Charity Ball 2024</h4>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-brand-gold text-sm" data-icon="qr_code_2">qr_code_2</span>
+<span class="text-brand-gold font-mono font-bold tracking-widest text-sm">GALA-77X</span>
+</div>
+<span class="material-symbols-outlined text-white/50 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</button>
+<!-- Card 2 -->
+<button class="event-card-hover group text-left p-6 bg-white border border-outline-variant rounded-xl transition-all duration-300 flex flex-col justify-between h-48">
+<div>
+<span class="text-secondary font-label-sm text-label-sm uppercase tracking-tighter mb-2 block">Corporate</span>
+<h4 class="text-primary font-headline-md text-headline-md leading-tight">TechSummit Innovation Expo</h4>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="qr_code_2">qr_code_2</span>
+<span class="text-primary font-mono font-bold tracking-widest text-sm">TECH-202</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</button>
+</div>
+<!-- Empty State (Hidden by default, toggle via JS for demo) -->
+<div class="hidden flex-col items-center justify-center p-unit-xl bg-surface-container-low rounded-xl border-2 border-dashed border-outline-variant text-center" id="empty-state">
+<span class="material-symbols-outlined text-6xl text-outline-variant mb-4" data-icon="event_busy">event_busy</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">No active events found nearby. Please enter your event code manually.</p>
+</div>
+</section>
+<!-- Section B: Enter Event Code -->
+<section class="lg:col-span-4">
+<div class="bg-primary-container p-unit-lg rounded-2xl shadow-xl sticky top-24 border border-white/10">
+<div class="mb-unit-lg">
+<h3 class="text-white font-headline-md text-headline-md mb-2">Have a Code?</h3>
+<p class="text-on-primary-container font-body-md text-body-md">Enter your 8-character event code provided by the organizer.</p>
+</div>
+<div class="space-y-unit-md">
+<div class="relative group">
+<label class="block text-white/70 font-label-sm text-label-sm mb-1 ml-1" for="event-code">Event Code</label>
+<input class="w-full h-14 bg-white/5 border border-white/20 rounded-xl px-4 text-brand-gold font-mono text-xl tracking-[0.2em] focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold placeholder:text-white/20 placeholder:tracking-normal transition-all" id="event-code" maxlength="8" placeholder="E.g. XYZ12345" type="text">
+<!-- Error State -->
+<p class="text-error font-label-sm text-label-sm mt-2 flex items-center gap-1 opacity-0 transition-opacity" id="error-message">
+<span class="material-symbols-outlined text-sm" data-icon="error">error</span>
+                                Invalid event code. Please check and try again.
+                            </p>
+</div>
+<button class="w-full h-14 bg-brand-gold hover:bg-brand-gold/90 text-on-secondary-fixed font-bold text-lg rounded-xl shadow-lg shadow-brand-gold/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" onclick="validateCode()">
+                            Continue
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="mt-8 pt-8 border-t border-white/10">
+<div class="flex items-start gap-3">
+<div class="bg-brand-gold/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-brand-gold" data-icon="help_outline">help_outline</span>
+</div>
+<div>
+<h4 class="text-white font-label-md text-label-md">Need assistance?</h4>
+<p class="text-white/40 text-xs mt-1">Codes are usually found on event signage or invitation emails.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Visual Decorative Element -->
+<div class="mt-unit-xl relative h-64 rounded-3xl overflow-hidden bg-primary-container">
+
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container to-transparent"></div>
+<div class="relative z-10 h-full flex flex-col items-center justify-center p-8 text-center">
+<span class="text-brand-gold font-label-md text-label-md uppercase tracking-[0.3em] mb-4">Capturing Moments</span>
+<h3 class="text-white font-headline-lg text-headline-lg max-w-lg">Every frame tells a story. Find yours today.</h3>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-surface-container-low border-t border-outline-variant flex flex-col md:flex-row justify-between items-center py-unit-xl px-margin-mobile md:px-margin-desktop w-full">
+<div class="flex flex-col items-center md:items-start mb-unit-lg md:mb-0">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="camera_enhance">camera_enhance</span>
+<span class="font-headline-md text-headline-md text-primary">FindMyShot</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 FindMyShot. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-unit-md md:gap-unit-lg">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors opacity-80" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors opacity-80" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors opacity-80" href="#">Support</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors opacity-80" href="#">Contact Us</a>
+</div>
+</footer>
+<script>
+        function validateCode() {
+            const input = document.getElementById('event-code');
+            const error = document.getElementById('error-message');
+            const code = input.value.trim();
+            
+            // Logic to simulate error
+            if (code.length < 8) {
+                error.classList.remove('opacity-0');
+                input.classList.add('border-error');
+                input.classList.remove('border-brand-gold');
+                
+                // Shake animation effect
+                input.animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300 });
+            } else {
+                error.classList.add('opacity-0');
+                input.classList.remove('border-error');
+                input.classList.add('border-brand-gold');
+                // Simulate success navigation
+                alert('Success! Finding photos for event: ' + code);
+            }
+        }
+
+        // Auto-focus input on mount
+        window.onload = () => {
+            document.getElementById('event-code').focus();</script>
+
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant flex justify-around items-center h-16 z-50 md:hidden"><a href="#" class="flex flex-col items-center gap-1 text-primary"><span class="material-symbols-outlined" data-icon="event">event</span><span class="text-label-sm">Events</span></a><a href="#" class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span><span class="text-label-sm">Scan</span></a><a href="#" class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="photo_library">photo_library</span><span class="text-label-sm">Gallery</span></a></nav></body></html>

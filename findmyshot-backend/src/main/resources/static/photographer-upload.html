@@ -1,0 +1,332 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Upload | FindMyShot Photographer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "surface-container-highest": "#d5e3fc",
+                        "on-tertiary-fixed-variant": "#3e3c8f",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#684000",
+                        "on-primary-fixed": "#181445",
+                        "on-tertiary-fixed": "#100563",
+                        "surface-variant": "#d5e3fc",
+                        "inverse-surface": "#233144",
+                        "primary": "#070235",
+                        "inverse-primary": "#c4c1fb",
+                        "on-tertiary-container": "#8180d7",
+                        "on-primary-fixed-variant": "#444173",
+                        "surface-tint": "#5b598c",
+                        "surface-container-low": "#eff4ff",
+                        "background": "#f8f9ff",
+                        "secondary-container": "#fea619",
+                        "primary-container": "#1e1b4b",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#0d1c2e",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e3dfff",
+                        "tertiary-container": "#171069",
+                        "surface-bright": "#f8f9ff",
+                        "outline": "#787680",
+                        "surface": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#8683ba",
+                        "surface-container": "#e6eeff",
+                        "primary-fixed-dim": "#c4c1fb",
+                        "surface-dim": "#ccdbf3",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#e2dfff",
+                        "secondary-fixed": "#ffddb8",
+                        "on-surface-variant": "#47464f",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#0d1c2e",
+                        "secondary": "#855300",
+                        "tertiary": "#04003b",
+                        "surface-container-high": "#dce9ff",
+                        "outline-variant": "#c8c5d0",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit-lg": "24px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "unit-xs": "4px",
+                        "unit-md": "16px",
+                        "unit-sm": "8px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "unit-xl": "48px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .upload-pulse {
+            animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #fea619;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 bg-surface-container-lowest dark:bg-primary-container shadow-sm border-b border-outline-variant dark:border-primary">
+<div class="flex items-center gap-unit-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim text-headline-md">camera</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">FindMyShot</span>
+</div>
+<div class="flex items-center gap-unit-md">
+<div class="hidden md:flex gap-unit-lg mr-unit-lg">
+<a class="text-on-surface-variant dark:text-on-primary-container font-label-md hover:bg-surface-container-high transition-colors duration-200 px-unit-sm py-unit-xs rounded-lg" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-primary-container font-label-md hover:bg-surface-container-high transition-colors duration-200 px-unit-sm py-unit-xs rounded-lg" href="#">Events</a>
+<a class="text-primary dark:text-inverse-primary font-bold font-label-md px-unit-sm py-unit-xs rounded-lg" href="#">Uploads</a>
+<a class="text-on-surface-variant dark:text-on-primary-container font-label-md hover:bg-surface-container-high transition-colors duration-200 px-unit-sm py-unit-xs rounded-lg" href="#">Settings</a>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a photographer in their late 30s, smiling warmly, holding a high-end DSLR camera. The background is a soft-focus studio setting with warm gold and deep indigo lighting. The image style is polished, corporate modern, reflecting a high-end concierge service aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-Zjn2wJBLBbVwlmlcsaqzRWLtREewTnXfZT-1rukl7N-5uIkn8oVRz4MjGXPfzFtNY9aZiTGl049GNqJuXUjy7PzkAo9GAgocSk4iIIeebAC-lLnCqlJ_bVlKHXrefqr9RMoIM6l-_86eMYfHx0AIleDyUDMmvm4UGAoNB7un2L-U5G7iq6IC9KCPp7B_JNSgK4aVwcgAoI8kpxJQ_xLho4SXmuA8b-CXRH_6OBNGSs6-Zz-7d29jGg">
+</div>
+</div>
+</header>
+<main class="pt-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="mb-unit-xl">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-unit-xs">Upload Center</h1>
+<p class="text-on-surface-variant font-body-md">Prepare and process your latest event captures.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Left Column: Controls & Zone -->
+<div class="lg:col-span-2 space-y-gutter">
+<!-- Event Selector -->
+<div class="bg-surface-container-lowest p-unit-lg rounded-xl shadow-[0_4px_6px_-1px_rgba(30,27,75,0.04)] border border-outline-variant"><div class="flex flex-col gap-unit-md">
+    <h3 class="font-label-md text-primary">Create Event</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-unit-md">
+        <div class="flex flex-col gap-unit-xs">
+            <label class="font-label-sm text-on-surface-variant">Event Name</label>
+            <input type="text" placeholder="e.g. Gala Night 2024" class="w-full bg-white border border-outline rounded-lg px-unit-md py-unit-sm focus:ring-2 focus:ring-secondary-container focus:border-secondary outline-none transition-all">
+        </div>
+        <div class="flex flex-col gap-unit-xs">
+            <label class="font-label-sm text-on-surface-variant">Event Date &amp; Time (Optional)</label>
+            <input type="datetime-local" class="w-full bg-white border border-outline rounded-lg px-unit-md py-unit-sm focus:ring-2 focus:ring-secondary-container focus:border-secondary outline-none transition-all">
+        </div>
+    </div>
+</div></div>
+<!-- Upload Zone -->
+<div class="relative group cursor-pointer">
+<div class="w-full h-80 border-4 border-dashed border-secondary-container rounded-2xl bg-white flex flex-col items-center justify-center p-unit-xl transition-all group-hover:bg-surface-container-low group-hover:border-secondary">
+<div class="w-20 h-20 bg-secondary-container/20 rounded-full flex items-center justify-center mb-unit-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-5xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+</div>
+<h2 class="font-headline-md text-primary mb-unit-xs">Drag &amp; Drop Photos</h2>
+<p class="text-on-surface-variant font-body-md mb-unit-lg text-center">or <span class="text-secondary font-bold underline">Browse Files</span></p>
+<div class="px-unit-md py-unit-xs bg-surface-container rounded-full text-label-sm text-on-surface-variant">
+                            Supports up to 50 files • JPG, RAW, PNG
+                        </div>
+</div>
+</div>
+<!-- Summary Stats Bar -->
+<div class="grid grid-cols-3 gap-unit-md"><div class="bg-primary-container p-unit-md rounded-xl text-center shadow-sm flex flex-col justify-center">
+    <div class="text-on-primary-container font-label-sm uppercase tracking-widest mb-1">Total</div>
+    <div class="text-white font-headline-md">24</div>
+</div>
+<div class="bg-white border border-outline-variant p-unit-md rounded-xl text-center shadow-sm flex flex-col justify-center">
+    <div class="text-secondary font-label-sm uppercase tracking-widest mb-1">Completed</div>
+    <div class="text-primary font-headline-md">18</div>
+</div>
+<div class="bg-white border border-outline-variant p-unit-md rounded-xl text-center shadow-sm flex flex-col justify-center">
+    <div class="text-error font-label-sm uppercase tracking-widest mb-1">Failed</div>
+    <div class="text-primary font-headline-md">1</div>
+</div></div>
+</div>
+<!-- Right Column: Progress List -->
+<div class="lg:col-span-1">
+<div class="bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant h-[600px] flex flex-col overflow-hidden">
+<div class="p-unit-lg border-b border-outline-variant bg-white flex justify-between items-center">
+<h3 class="font-label-md text-primary">Queue Status</h3>
+<span class="text-label-sm text-on-surface-variant">4 remaining</span>
+</div>
+<div class="flex-grow overflow-y-auto custom-scrollbar p-unit-md space-y-unit-md">
+<!-- Done Item -->
+<div class="flex items-center gap-unit-md p-unit-sm bg-white rounded-lg border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="w-12 h-12 rounded bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A high-resolution professional photograph of a luxury gala ballroom, featuring crystal chandeliers, long tables with elegant floral centerpieces, and warm amber lighting. The atmosphere is sophisticated and celebratory, matching the corporate modern UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG0dxT9NX8XCuMgwhWZajN0Xniq49jBGJFZ5nKGVJvEoXwsp6rVYxIGX0YV_IdJBbOwGF9-haPVD87mKmp_vblZjuGkewcApB1LOB8ndXNQbv3BwigWvTP-XcvNT80tAvn0HtZ473OlRBWrDNpi19KTHjPDkziTmAPEvoFWV0ykrepWcm_VKfZnZ2fTzkz9W2sgf_Vc97SvqyzF2MCn5SLakVJbwhG4Gvg-ic7QWrIA8Kg2QSdBFcIqQ">
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4821.jpg</div>
+<div class="text-label-sm text-secondary font-bold">Done</div>
+</div>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Processing Item -->
+<div class="flex items-center gap-unit-md p-unit-sm bg-white rounded-lg border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="w-12 h-12 rounded bg-surface-container-low overflow-hidden relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="A portrait-style photograph of a guest at a formal event, captured in candid laughter. The background is softly blurred with bokeh lights in tones of deep indigo and gold. The composition follows the rule of thirds, emphasizing a high-end concierge service feeling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgmPerUuJinE-4hspCtx9FH1zf-0zUCQifqTSWCOd6nZcjZPZT0O214eIye75wEkCh-MRdeZfCATS5Xm6xQSmZihCnv4n9NlUvYXfoaMSebE4eBNgxYiQl3siKNzidfhG1-cXsMNosGxOM_keXTgZa1PiDB0YnAE5uDdT22mxPl1-CHlw3zMFPzZEXh9vkdxIBtTVOL98x8wglwd07onahupJUEVUBB-w61dmM4L383fVHDh1vBvj68A">
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl upload-pulse">face</span>
+</div>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4822.jpg</div>
+<div class="text-label-sm text-on-surface-variant italic">Processing Faces...</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-secondary-container upload-pulse"></div>
+</div>
+<!-- Uploading Item -->
+<div class="flex flex-col gap-unit-xs p-unit-sm bg-white rounded-lg border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-unit-md">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">image</span>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4823.jpg</div>
+<div class="text-label-sm text-on-surface-variant">Uploading (65%)</div>
+</div>
+<span class="material-symbols-outlined text-outline">sync</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-unit-xs overflow-hidden">
+<div class="bg-secondary h-full transition-all duration-500" style="width: 65%;"></div>
+</div>
+</div>
+<!-- Failed Item -->
+<div class="flex items-center gap-unit-md p-unit-sm bg-error-container/20 rounded-lg border border-error/20 hover:shadow-sm transition-shadow">
+<div class="w-12 h-12 rounded bg-error-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-error">error</span>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4824.jpg</div>
+<div class="text-label-sm text-error">Upload Failed</div>
+</div>
+<button class="text-label-sm font-bold text-primary hover:underline">Retry</button>
+</div>
+<!-- More mock items to fill scroll -->
+<div class="flex items-center gap-unit-md p-unit-sm bg-white rounded-lg border border-outline-variant opacity-60">
+<div class="w-12 h-12 rounded bg-surface-container-low"></div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4825.jpg</div>
+<div class="text-label-sm text-on-surface-variant">Pending</div>
+</div>
+</div>
+<div class="flex items-center gap-unit-md p-unit-sm bg-white rounded-lg border border-outline-variant opacity-60">
+<div class="w-12 h-12 rounded bg-surface-container-low"></div>
+<div class="flex-grow">
+<div class="font-label-md text-primary truncate">IMG_4826.jpg</div>
+<div class="text-label-sm text-on-surface-variant">Pending</div>
+</div>
+</div>
+</div>
+<div class="p-unit-lg bg-surface-container-low">
+<button class="w-full bg-secondary-container text-on-secondary-container font-label-md py-unit-sm rounded-lg hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-unit-sm">
+<span class="material-symbols-outlined">bolt</span>
+                            Finalize Uploads
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-unit-sm bg-surface-container-lowest dark:bg-primary-container md:hidden shadow-[0_-4px_6px_-1px_rgba(30,27,75,0.04)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-primary-container-variant px-4 py-1">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-primary-container-variant px-4 py-1">
+<span class="material-symbols-outlined text-2xl">calendar_month</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-6 py-2">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+<span class="font-label-sm text-label-sm">Uploads</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-primary-container-variant px-4 py-1">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</div>
+</nav>
+<script>
+        // Micro-interaction for the dropzone hover effect
+        const dropzone = document.querySelector('.group');
+        if(dropzone) {
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.firstElementChild.classList.add('bg-primary-container/5', 'scale-[1.02]');
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.firstElementChild.classList.remove('bg-primary-container/5', 'scale-[1.02]');
+            });
+        }
+
+        // Toggle logic for "New Event" input
+        const select = document.querySelector('select');
+        const input = document.querySelector('input[type="text"]');
+        if(select && input) {
+            input.style.opacity = '0.3';
+            input.disabled = true;
+            select.addEventListener('change', (e) => {
+                if(e.target.value === 'new') {
+                    input.style.opacity = '1';
+                    input.disabled = false;
+                    input.focus();
+                } else {
+                    input.style.opacity = '0.3';
+                    input.disabled = true;
+                }
+            });
+        }
+    </script>
+
+
+
+</body></html>

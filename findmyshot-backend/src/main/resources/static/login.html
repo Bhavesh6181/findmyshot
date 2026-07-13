@@ -1,0 +1,192 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FindMyShot - Secure Entry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#100563",
+                    "surface-container-low": "#eff4ff",
+                    "tertiary-fixed": "#e2dfff",
+                    "tertiary": "#04003b",
+                    "on-secondary-fixed": "#2a1700",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#0d1c2e",
+                    "outline": "#787680",
+                    "error-container": "#ffdad6",
+                    "surface": "#f8f9ff",
+                    "surface-dim": "#ccdbf3",
+                    "on-primary-container": "#8683ba",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-container": "#fea619",
+                    "on-secondary-container": "#684000",
+                    "on-primary-fixed": "#181445",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#e6eeff",
+                    "inverse-surface": "#233144",
+                    "secondary": "#855300",
+                    "outline-variant": "#c8c5d0",
+                    "on-primary-fixed-variant": "#444173",
+                    "on-tertiary-container": "#8180d7",
+                    "inverse-primary": "#c4c1fb",
+                    "primary-fixed": "#e3dfff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1e1b4b",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#171069",
+                    "surface-container-high": "#dce9ff",
+                    "primary-fixed-dim": "#c4c1fb",
+                    "primary": "#070235",
+                    "surface-tint": "#5b598c",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-surface": "#0d1c2e",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "surface-variant": "#d5e3fc",
+                    "on-tertiary-fixed-variant": "#3e3c8f",
+                    "surface-bright": "#f8f9ff",
+                    "tertiary-fixed-dim": "#c3c0ff",
+                    "surface-container-highest": "#d5e3fc",
+                    "on-surface-variant": "#47464f",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "background": "#f8f9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit-lg": "24px",
+                    "gutter": "24px",
+                    "unit-sm": "8px",
+                    "unit-xl": "48px",
+                    "unit-xs": "4px",
+                    "unit-md": "16px",
+                    "container-max": "1280px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .gold-glow:hover {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen bg-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/20">
+<div class="flex justify-between items-center px-unit-lg h-16 w-full">
+<div class="flex items-center gap-3"><div class="flex items-center gap-unit-xs"><span class="material-symbols-outlined text-secondary" data-icon="camera_front">camera_front</span><span class="font-headline-md text-headline-md font-bold text-secondary">FindMyShot</span></div></div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary dark:text-secondary-fixed cursor-pointer hover:bg-surface-container-low transition-colors rounded-full p-2" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center py-unit-xl px-margin-mobile md:px-margin-desktop relative overflow-hidden">
+<!-- Subtle Ambient Background (WebGL replacement placeholder logic) -->
+<div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary-container via-transparent to-transparent"></div>
+</div>
+<div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-unit-lg z-10 flex-col">
+<!-- Photographer Card -->
+<section class="group relative card-hover bg-primary-container rounded-xl border border-primary shadow-2xl overflow-hidden flex flex-col text-white" style="--mouse-x: 332px; --mouse-y: 15.78582763671875px;"><div class="h-48 md:h-64 overflow-hidden relative"><img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A joyful group of diverse event attendees at a high-end gala, laughing and celebrating under warm, golden ambient lighting. The background features blurred midnight blue decor and sparkling champagne glasses. The focus is on a central person smiling radiantly, capturing the essence of a memorable moment. The aesthetic is premium, warm, and inviting with rich tactile textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzB4VkV_CDmEEehrqHqXjKrxpCjGUP2yein3RH8ff2gOYqcYNoR1JLEbFGvYlQqUfd3zeRFL72XXTi1m7brMECGLvAibLOUovlv_9D53H3Z2SXAK6n4sg3oziXqnNMHTf6wdbHDzyA4plxT2cerYeXzcNciYICnEAnAoZJU0951L-dqPSgifAva60-vSZxaK9V93CLDe1wnQZx2YW6PI8pFRrDg9YWsdX2CQSLtS-3TQVjpmlyl3BzpA"><div class="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div></div><div class="p-unit-lg flex flex-col flex-grow items-start"><div class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[16px]" data-icon="face" style="font-variation-settings: 'FILL' 1;">face</span><span class="font-label-sm text-label-sm uppercase tracking-wider">Instant Access</span></div><h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white mb-2">Attendee</h2><p class="font-body-md text-body-md text-on-primary-container mb-unit-xl">Find your photos from an event by scanning your selfie. No account required. Our facial recognition finds every moment you appear in instantly.</p><div class="mt-auto w-full"><button class="gold-glow w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#F59E0B] text-primary font-label-md text-label-md font-bold rounded-lg transition-all active:scale-95 duration-150"><span class="material-symbols-outlined" data-icon="search">search</span>Find My Photos</button></div></div></section><section class="group relative card-hover bg-primary-container rounded-xl border border-primary shadow-2xl overflow-hidden flex flex-col text-white" style="--mouse-x: 14px; --mouse-y: 41.7630615234375px;"><div class="h-48 md:h-64 overflow-hidden relative"><img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A professional photographer in a dimly lit, sophisticated studio setting..." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBS2JnXspVQYtsiRIsce1Hl_dbz68zXZJB1m0KzjCD00Xr5yG-X11FBLEU5E7HKblceOjNt4v8p9khk-2CklbgqlfEHYklWnh4S9xNxB9RrtMGEff5ejViOP1clWR6oCmgH2rMu22TEAtnKa0oB2gvCe0ondlIc2aB8JCiJ4YF8L-rU1pkBclviZ4kASkaNV4V32u30sOmuLYNjGuqK5RuVrLt_d5gzJyAFRqkoM3KEE-Xk5dZmvfwSSw"><div class="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div></div><div class="p-unit-lg flex flex-col flex-grow items-start"><div class="bg-primary text-white px-3 py-1 rounded-full mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[16px]" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span><span class="font-label-sm text-label-sm uppercase tracking-wider">Professional Portal</span></div><h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white mb-2">Photographer</h2><p class="font-body-md text-body-md text-on-primary-container mb-unit-xl">Manage your events and upload photos to let AI handle delivery. We automate the tagging and distribution so you can focus on the art of the shot.</p><div class="mt-auto w-full"><button class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border border-outline-variant text-primary font-label-md text-label-md font-bold rounded-lg hover:bg-surface-container-low transition-all active:scale-95 duration-150"><img alt="Google Logo" class="w-6 h-6" src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png">Sign in with Google</button></div></div></section>
+<!-- Attendee Card -->
+
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container full-width">
+<div class="w-full py-unit-xl px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-unit-md">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-headline-md text-headline-md text-secondary">FindMyShot</span>
+<p class="font-body-md text-body-md text-on-primary/80">© 2024 FindMyShot. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-body-md text-body-md text-on-primary/80 hover:text-secondary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-primary/80 hover:text-secondary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-primary/80 hover:text-secondary-fixed transition-colors" href="#">Help Center</a>
+<a class="font-body-md text-body-md text-on-primary/80 hover:text-secondary-fixed transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for the cards
+        const cards = document.querySelectorAll('.card-hover');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+</body></html>

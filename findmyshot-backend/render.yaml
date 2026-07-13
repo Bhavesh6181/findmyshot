@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: findmyshot-backend
+    env: docker
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://findmyshot-bhavesh.vercel.app,http://localhost:3000,http://localhost:3003"
+

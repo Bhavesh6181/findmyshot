@@ -1,0 +1,49 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: findmyshot-backend
+
+models:
+  face-detection-path: models/det_500m.onnx
+  face-recognition-path: models/w600k_mbf.onnx
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    mongodb:
+      uri: mongodb+srv://bhatkudavbhavesh_db_user:2wv0vVhyzr4ksbTU@cluster0.yvll2u6.mongodb.net/findmyshot?retryWrites=true&w=majority&appName=Cluster0&serverSelectionTimeoutMS=5000&connectTimeoutMS=5000
+      auto-index-creation: false
+cloudinary:
+  cloud-name: dykdc2ff7
+  api-key: "494418477324639"
+  api-secret: a4yUoamm9J-yzKZdNUZ0xMG0IwA
+cors:
+  allowed-origins: http://localhost:3000
+logging:
+  level:
+    root: INFO
+    com.findmyshot: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+logging:
+  level:
+    root: INFO
+    com.findmyshot: INFO
+

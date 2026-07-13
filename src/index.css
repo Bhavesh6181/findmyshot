@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #070235;
+  --color-secondary: #855300;
+  --color-secondary-container: #fea619;
+  --color-on-secondary-container: #684000;
+  --color-background: #f8f9ff;
+  --color-on-surface: #0d1c2e;
+  --color-on-surface-variant: #47464f;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container-high: #dce9ff;
+  --color-surface-container-highest: #d5e3fc;
+  --color-surface-container-lowest: #ffffff;
+  --color-outline-variant: #c8c5d0;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-primary-container: #1e1b4b;
+  --color-on-primary-container: #8683ba;
+  --color-surface-variant: #d5e3fc;
+  --color-outline: #787680;
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  
+  /* Additional Surface Tokens */
+  --color-surface-container: #e6eeff;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-dim: #ccdbf3;
+  --color-surface: #f8f9ff;
+  --color-on-background: #0d1c2e;
+  
+  /* Brand Compatibility Colors */
+  --color-brand-gold: #fea619;
+  --color-void: #0d0d0d;
+  --color-card: #1a1a2e;
+  --color-gold: #c9a96e;
+  --color-ivory: #f5f0e8;
+  --color-muted: #8a8a8a;
+  --color-faded: #555555;
+
+  --spacing-unit-md: 16px;
+  --spacing-unit-lg: 24px;
+  --spacing-unit-xl: 48px;
+  --spacing-margin-desktop: 40px;
+  --spacing-gutter: 24px;
+  --spacing-unit-sm: 8px;
+  --spacing-container-max: 1280px;
+  --spacing-unit-xs: 4px;
+  --spacing-margin-mobile: 16px;
+
+  /* High-Tech Scanner Animation */
+  --animate-scan: scan 3s linear infinite;
+
+  @keyframes scan {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(300%);
+    }
+  }
+}
+
+/* Custom globals and variables */
+:root {
+  --primary: #070235;
+  --secondary: #855300;
+  --secondary-container: #fea619;
+  --background: #f8f9ff;
+  --on-surface: #0d1c2e;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9ff;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Custom styling from Stitch screens */
+.glass-effect {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gold-glow:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.event-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(7, 2, 53, 0.05);
+}
+
+/* Masonry grid for gallery */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 24px;
+}
+
+.photo-card-overlay {
+  background: linear-gradient(to top, rgba(7, 2, 53, 0.8) 0%, rgba(7, 2, 53, 0) 60%);
+}
+
+.nocturnal-gradient {
+  background: linear-gradient(135deg, #1e1b4b 0%, #070235 100%);
+}
+
+/* Shimmer animations */
+.shimmer-border {
+  position: relative;
+}
+
+.shimmer-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 4px;
+  background: linear-gradient(90deg, #eff4ff 0%, #fea619 50%, #eff4ff 100%);
+  background-size: 200% auto;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: shine 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
