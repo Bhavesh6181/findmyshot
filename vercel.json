@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    { "source": "/events", "destination": "https://findmyshot-backend.onrender.com/events" },
+    { "source": "/events/:path*", "destination": "https://findmyshot-backend.onrender.com/events/:path*" },
+    { "source": "/match", "destination": "https://findmyshot-backend.onrender.com/match" },
+    { "source": "/api/:path*", "destination": "https://findmyshot-backend.onrender.com/api/:path*" },
+    { "source": "/photos/:path*", "destination": "https://findmyshot-backend.onrender.com/photos/:path*" },
+    { "source": "/process-photo", "destination": "https://findmyshot-backend.onrender.com/process-photo" },
+    { "source": "/process-photo/:path*", "destination": "https://findmyshot-backend.onrender.com/process-photo/:path*" },
+    { "source": "/jobs/:path*", "destination": "https://findmyshot-backend.onrender.com/jobs/:path*" },
+    { "source": "/healthz", "destination": "https://findmyshot-backend.onrender.com/healthz" },
+    { "source": "/((?!assets|favicon).*)", "destination": "/index.html" }
+  ]
+}
