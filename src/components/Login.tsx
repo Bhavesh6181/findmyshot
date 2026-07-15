@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 
 interface LoginProps {
@@ -7,42 +6,34 @@ interface LoginProps {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
-/** Wipe GIS-injected DOM nodes before React unmounts the container.
- *  Must be called SYNCHRONOUSLY before any navigation that removes the Login component. */
-function clearGisContainer() {
+function decodeJwt(token: string): Record<string, any> | null {
   try {
-    const goog = (window as any).google;
-    if (goog?.accounts?.id) goog.accounts.id.cancel();
-  } catch (_) { /* ignore */ }
-  const btnEl = document.getElementById('google-signin-btn');
-  if (btnEl) btnEl.innerHTML = '';
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
 }
 
 export default function Login({ onNavigate }: LoginProps) {
-  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Track whether we've already navigated to avoid double-clearing
-  const navigatedRef = useRef(false);
+  const onNavigateRef = useRef(onNavigate);
+  onNavigateRef.current = onNavigate;
 
   useEffect(() => {
-    // Utility to parse/decode Google JWT credentials
-    const decodeJwt = (token: string) => {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-          window.atob(base64)
-            .split('')
-            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join('')
-        );
-        return JSON.parse(jsonPayload);
-      } catch (err) {
-        console.error('Error decoding JWT:', err);
-        return null;
-      }
-    };
+    if (!GOOGLE_CLIENT_ID) {
+      setError('Google Sign-In is not configured.');
+      return;
+    }
 
     const handleCredentialResponse = (response: any) => {
       setSigningIn(true);
@@ -54,82 +45,72 @@ export default function Login({ onNavigate }: LoginProps) {
         localStorage.setItem('user_picture', payload.picture || '');
         localStorage.setItem('user_email', payload.email || '');
         localStorage.setItem('google_token', response.credential);
-
-        // ⚠️ CRITICAL: clear GIS nodes BEFORE React unmounts this component.
-        // If we call onNavigate first, React will try to removeChild GIS-injected
-        // iframe nodes that it doesn't own → NotFoundError crash.
-        navigatedRef.current = true;
-        clearGisContainer();
-        onNavigate('photographer-upload');
+        // Navigate directly — no DOM cleanup needed because we never called renderButton
+        onNavigateRef.current('photographer-upload');
       } else {
         setSigningIn(false);
         setError('Sign-in failed. Please try again.');
       }
     };
 
-    const initGoogleSignIn = () => {
+    const init = () => {
       const google = (window as any).google;
-      if (!google?.accounts?.id) return;
-
-      if (!GOOGLE_CLIENT_ID) {
-        console.error('VITE_GOOGLE_CLIENT_ID is not set in environment variables.');
-        return;
-      }
-
+      if (!google?.accounts?.id) return false;
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleCredentialResponse,
         auto_select: false,
         cancel_on_tap_outside: true,
       });
-
-      const btnEl = document.getElementById('google-signin-btn');
-      if (btnEl) {
-        // GIS SDK takes full DOM ownership of this element — do NOT put React children inside it
-        google.accounts.id.renderButton(btnEl, {
-          theme: 'filled_blue',
-          size: 'large',
-          shape: 'rectangular',
-          width: 300,
-          text: 'signin_with',
-          logo_alignment: 'center',
-        });
-      }
-
-      setGoogleLoaded(true);
+      setGoogleReady(true);
+      return true;
     };
 
-    // Shared cleanup: cancel GIS and clear container before React unmounts
-    // Skip if we already cleared it in handleCredentialResponse before navigating
-    const cleanup = () => {
-      if (!navigatedRef.current) clearGisContainer();
-    };
-
-    // Initialize or wait for GIS SDK to load
-    const google = (window as any).google;
-    if (google?.accounts?.id) {
-      initGoogleSignIn();
-      return cleanup;
-    } else {
-      const interval = setInterval(() => {
-        const googleRetry = (window as any).google;
-        if (googleRetry?.accounts?.id) {
-          initGoogleSignIn();
-          clearInterval(interval);
-        }
-      }, 200);
-      // Timeout fallback if script never loads
+    // Try immediately, then poll until SDK loads
+    if (!init()) {
+      const interval = setInterval(() => { if (init()) clearInterval(interval); }, 200);
       const timeout = setTimeout(() => {
         clearInterval(interval);
-        setError('Google Sign-In could not load. Check your network and try refreshing.');
+        setError('Google Sign-In could not load. Check your network and try again.');
       }, 10000);
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-        cleanup();
-      };
+      return () => { clearInterval(interval); clearTimeout(timeout); };
     }
-  }, [onNavigate]);
+  }, []);
+
+  const handleGoogleSignIn = () => {
+    const google = (window as any).google;
+    if (!google?.accounts?.id) {
+      setError('Google Sign-In is not ready yet. Please wait a moment.');
+      return;
+    }
+    setError(null);
+    /**
+     * prompt() shows Google's native One Tap / account-chooser UI appended to
+     * document.body — it NEVER injects into our React tree, so there is zero
+     * removeChild conflict.
+     */
+    google.accounts.id.prompt((notification: any) => {
+      if (notification.isNotDisplayed?.()) {
+        // One Tap suppressed (browser blocks third-party cookies, etc.)
+        // Fall back to the standard OAuth redirect popup
+        const params = new URLSearchParams({
+          client_id: GOOGLE_CLIENT_ID,
+          redirect_uri: window.location.origin,
+          response_type: 'token',
+          scope: 'openid email profile',
+          prompt: 'select_account',
+        });
+        const popup = window.open(
+          `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
+          'google-signin',
+          'width=500,height=600,left=200,top=100'
+        );
+        if (!popup) {
+          setError('Popup was blocked. Please allow popups for this site and try again.');
+        }
+      }
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-primary">
@@ -153,13 +134,14 @@ export default function Login({ onNavigate }: LoginProps) {
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center pt-24 pb-16 px-margin-mobile md:px-margin-desktop relative overflow-hidden">
-        {/* Subtle Ambient Background */}
+        {/* Ambient background */}
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary via-transparent to-transparent" />
         </div>
 
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-unit-lg z-10">
-          {/* Attendee Card */}
+
+          {/* ── Attendee Card ── */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
               <img
@@ -167,7 +149,7 @@ export default function Login({ onNavigate }: LoginProps) {
                 alt="Joyful group of event attendees"
                 src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600&h=400"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent" />
             </div>
             <div className="p-unit-lg flex flex-col flex-grow items-start">
               <div className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full mb-4 flex items-center gap-2">
@@ -190,7 +172,7 @@ export default function Login({ onNavigate }: LoginProps) {
             </div>
           </section>
 
-          {/* Photographer Card */}
+          {/* ── Photographer Card ── */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
               <img
@@ -198,7 +180,7 @@ export default function Login({ onNavigate }: LoginProps) {
                 alt="Photographer with camera"
                 src="https://images.unsplash.com/photo-1452780212940-6f5c0d14d84a?auto=format&fit=crop&q=80&w=600&h=400"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent" />
             </div>
             <div className="p-unit-lg flex flex-col flex-grow items-start">
               <div className="bg-primary text-white border border-secondary/20 px-3 py-1 rounded-full mb-4 flex items-center gap-2">
@@ -209,33 +191,38 @@ export default function Login({ onNavigate }: LoginProps) {
               <p className="font-body-md text-on-primary-container/80 mb-unit-xl">
                 Manage your events and upload photos to let AI handle delivery. We automate the tagging and distribution so you can focus on the art of the shot.
               </p>
+
               <div className="mt-auto w-full flex flex-col items-center gap-3">
-                {/* Loading spinner — kept OUTSIDE #google-signin-btn to avoid React/GIS DOM conflict */}
-                {!googleLoaded && !error && (
-                  <div className="flex items-center gap-2 text-white/50 text-sm min-h-[50px]">
-                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                    Loading Google Sign-In…
-                  </div>
-                )}
 
-                {/* GIS SDK injects its iframe here — React must NOT render any children inside this div */}
-                <div
-                  id="google-signin-btn"
-                  className="w-full flex justify-center"
-                  style={{ minHeight: googleLoaded ? '50px' : '0px' }}
-                />
-
-                {signingIn && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm">
-                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                    Signing you in…
-                  </div>
-                )}
+                {/* ── Custom Google Sign-In Button ──
+                    We render our OWN button and call google.accounts.id.prompt().
+                    GIS draws its UI into document.body — never inside our React tree.
+                    This completely eliminates the removeChild DOM conflict. */}
+                <button
+                  id="photographer-signin-btn"
+                  onClick={handleGoogleSignIn}
+                  disabled={!googleReady || signingIn}
+                  className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg shadow transition-all active:scale-95 duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {/* Google "G" logo */}
+                  <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </svg>
+                  {signingIn
+                    ? 'Signing in…'
+                    : !googleReady
+                    ? 'Loading…'
+                    : 'Sign in with Google'}
+                </button>
 
                 {error && (
-                  <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg px-4 py-2 text-red-300 text-xs w-full">
-                    <span className="material-symbols-outlined text-base shrink-0">error</span>
-                    {error}
+                  <div className="flex items-start gap-2 bg-red-500/20 border border-red-400/40 rounded-lg px-4 py-2 text-red-300 text-xs w-full">
+                    <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
+                    <span>{error}</span>
                   </div>
                 )}
               </div>
