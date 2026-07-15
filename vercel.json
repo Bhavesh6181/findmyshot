@@ -1,4 +1,19 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/events", "destination": "https://findmyshot-backend.onrender.com/events" },
     { "source": "/events/:path*", "destination": "https://findmyshot-backend.onrender.com/events/:path*" },

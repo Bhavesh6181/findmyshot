@@ -117,13 +117,24 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
 
     setUploading(true);
 
-    // Mark all as uploading immediately so user sees progress
-    const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'uploading' }));
+    // Start all as pending so user sees the full queue
+    const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'pending' }));
     setUploadStatuses([...statuses]);
 
-    // Fire ALL uploads simultaneously — backend is async so no need to throttle
-    const uploadOne = async (idx: number) => {
+    /**
+     * Semaphore-based concurrency limiter.
+     * Firing all 200 at once causes browser TCP connection starvation (max ~6 per domain).
+     * 12 in-flight at a time is the sweet spot: fast without self-congestion.
+     */
+    const MAX_CONCURRENT = 12;
+    let activeCount = 0;
+    let nextIdx = 0;
+
+    const uploadOne = async (idx: number): Promise<void> => {
       const file = selectedFiles[idx];
+
+      statuses[idx] = { filename: file.name, status: 'uploading' };
+      setUploadStatuses([...statuses]);
 
       try {
         const formData = new FormData();
@@ -147,25 +158,33 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
         }
 
         const data = await res.json();
-
-        // Backend returns processing=true when face embedding is still running in background
         statuses[idx] = {
           filename: file.name,
-          // If server signals async processing, show 'processing' badge (not done yet)
           status: data.processing ? 'processing' : 'done',
           facesFound: data.facesFound >= 0 ? data.facesFound : undefined,
           url: data.url
         };
       } catch (err: any) {
         console.error(`Error uploading ${file.name}:`, err);
-        statuses[idx] = { ...statuses[idx], status: 'error', errorMsg: err.message || 'Upload failed' };
+        statuses[idx] = { filename: file.name, status: 'error', errorMsg: err.message || 'Upload failed' };
       }
 
       setUploadStatuses([...statuses]);
     };
 
-    // Launch everything at once — true parallel upload
-    await Promise.all(selectedFiles.map((_, idx) => uploadOne(idx)));
+    // Worker loop: each worker picks the next available file
+    const worker = async () => {
+      while (true) {
+        const idx = nextIdx++;
+        if (idx >= selectedFiles.length) break;
+        await uploadOne(idx);
+      }
+    };
+
+    // Start MAX_CONCURRENT workers — they self-schedule until all files are done
+    await Promise.all(
+      Array.from({ length: Math.min(MAX_CONCURRENT, selectedFiles.length) }, () => worker())
+    );
 
     setUploading(false);
     loadEvents();
