@@ -11,6 +11,7 @@ interface PhotoStatus {
   status: 'pending' | 'uploading' | 'processing' | 'done' | 'error';
   facesFound?: number;
   url?: string;
+  errorMsg?: string;
 }
 
 interface PhotographerUploadProps {
@@ -91,11 +92,10 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setWarning(null);
-    
-    // Enforce max 20 files per batch for performance
-    const limit = 20;
+
+    const limit = 200;
     const acceptedFiles = files.slice(0, limit);
-    
+
     if (files.length > limit) {
       setWarning(`Max ${limit} files allowed per batch. Dropped ${files.length - limit} files.`);
     }
@@ -111,13 +111,17 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
     if (selectedFiles.length === 0 || !selectedEventCode || uploading) return;
 
     setUploading(true);
-    const statuses = [...uploadStatuses];
 
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-      
-      // Update state: Uploading
-      statuses[i] = { ...statuses[i], status: 'uploading' };
+    // Initialise all statuses as pending
+    const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'pending' }));
+    setUploadStatuses([...statuses]);
+
+    const CONCURRENCY = 5; // upload 5 photos at a time for maximum speed
+
+    const uploadOne = async (idx: number) => {
+      const file = selectedFiles[idx];
+
+      statuses[idx] = { ...statuses[idx], status: 'uploading' };
       setUploadStatuses([...statuses]);
 
       try {
@@ -125,8 +129,7 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
         formData.append('file', file);
         formData.append('eventCode', selectedEventCode);
 
-        // Update state: Processing
-        statuses[i] = { ...statuses[i], status: 'processing' };
+        statuses[idx] = { ...statuses[idx], status: 'processing' };
         setUploadStatuses([...statuses]);
 
         const res = await fetch('/api/upload', {
@@ -135,21 +138,39 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
         });
 
         if (!res.ok) {
-          throw new Error('Upload failed');
+          // Read actual error message from server
+          let msg = `HTTP ${res.status}`;
+          try {
+            const errData = await res.json();
+            msg = errData.message || errData.error || errData.detail || msg;
+          } catch {
+            try { msg = await res.text() || msg; } catch { /* ignore */ }
+          }
+          throw new Error(msg);
         }
 
         const data = await res.json();
-        statuses[i] = {
+        statuses[idx] = {
           filename: file.name,
           status: 'done',
           facesFound: data.facesFound >= 0 ? data.facesFound : 0,
           url: data.url
         };
-      } catch (err) {
+      } catch (err: any) {
         console.error(`Error uploading ${file.name}:`, err);
-        statuses[i] = { ...statuses[i], status: 'error' };
+        statuses[idx] = { ...statuses[idx], status: 'error', errorMsg: err.message || 'Upload failed' };
       }
+
       setUploadStatuses([...statuses]);
+    };
+
+    // Run uploads in parallel batches of CONCURRENCY
+    for (let i = 0; i < selectedFiles.length; i += CONCURRENCY) {
+      const batch = [];
+      for (let j = i; j < Math.min(i + CONCURRENCY, selectedFiles.length); j++) {
+        batch.push(uploadOne(j));
+      }
+      await Promise.all(batch);
     }
 
     setUploading(false);
@@ -281,14 +302,14 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
             <div className="bg-white p-6 rounded-2xl border border-outline-variant/30 shadow-sm">
               <h3 className="font-headline-md text-lg font-bold text-primary mb-4">Upload Event Photos</h3>
               
-              <div 
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary/5 transition-colors group mb-4"
               >
                 <span className="material-symbols-outlined text-4xl text-outline mb-2 group-hover:text-primary transition-colors">upload_file</span>
                 <p className="text-sm font-bold text-primary mb-1">Click to select photos</p>
-                <p className="text-xs text-on-surface-variant">PNG or JPEG format up to 20 files</p>
-                <input 
+                <p className="text-xs text-on-surface-variant">PNG or JPEG format · up to 200 files</p>
+                <input
                   ref={fileInputRef}
                   type="file"
                   multiple
@@ -348,8 +369,11 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
                             </span>
                           )}
                           {status.status === 'error' && (
-                            <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold text-[10px]">
-                              Error
+                            <span
+                              className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold text-[10px]"
+                              title={status.errorMsg || 'Upload failed'}
+                            >
+                              Error{status.errorMsg ? `: ${status.errorMsg.slice(0, 60)}` : ''}
                             </span>
                           )}
                           {status.status === 'pending' && (
