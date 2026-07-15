@@ -26,14 +26,19 @@ export default function Login({ onNavigate }: LoginProps) {
   const [googleReady, setGoogleReady] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
   const onNavigateRef = useRef(onNavigate);
   onNavigateRef.current = onNavigate;
+
+  const googleBtnContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
       setError('Google Sign-In is not configured.');
       return;
     }
+
+    let wrapperDiv: HTMLDivElement | null = null;
 
     const handleCredentialResponse = (response: any) => {
       setSigningIn(true);
@@ -45,7 +50,6 @@ export default function Login({ onNavigate }: LoginProps) {
         localStorage.setItem('user_picture', payload.picture || '');
         localStorage.setItem('user_email', payload.email || '');
         localStorage.setItem('google_token', response.credential);
-        // Navigate directly — no DOM cleanup needed because we never called renderButton
         onNavigateRef.current('photographer-upload');
       } else {
         setSigningIn(false);
@@ -53,64 +57,73 @@ export default function Login({ onNavigate }: LoginProps) {
       }
     };
 
-    const init = () => {
+    const initAndRender = () => {
       const google = (window as any).google;
       if (!google?.accounts?.id) return false;
+
+      // Initialize Google Identity Services
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleCredentialResponse,
         auto_select: false,
         cancel_on_tap_outside: true,
       });
+
+      // Render the Google Button safely inside an imperatively created wrapper element
+      if (googleBtnContainerRef.current) {
+        googleBtnContainerRef.current.innerHTML = '';
+        wrapperDiv = document.createElement('div');
+        wrapperDiv.id = 'g-btn-wrapper';
+        googleBtnContainerRef.current.appendChild(wrapperDiv);
+
+        google.accounts.id.renderButton(wrapperDiv, {
+          theme: 'filled_blue',
+          size: 'large',
+          shape: 'rectangular',
+          width: 300,
+          text: 'signin_with',
+          logo_alignment: 'center',
+        });
+      }
+
       setGoogleReady(true);
       return true;
     };
 
-    // Try immediately, then poll until SDK loads
-    if (!init()) {
-      const interval = setInterval(() => { if (init()) clearInterval(interval); }, 200);
+    // Try immediately, poll if script not loaded yet
+    if (!initAndRender()) {
+      const interval = setInterval(() => {
+        if (initAndRender()) clearInterval(interval);
+      }, 200);
       const timeout = setTimeout(() => {
         clearInterval(interval);
         setError('Google Sign-In could not load. Check your network and try again.');
       }, 10000);
-      return () => { clearInterval(interval); clearTimeout(timeout); };
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        // Clean up One Tap and DOM wrapper to prevent React unmount errors
+        try {
+          const goog = (window as any).google;
+          if (goog?.accounts?.id) goog.accounts.id.cancel();
+        } catch (_) {}
+        if (wrapperDiv && wrapperDiv.parentNode) {
+          wrapperDiv.parentNode.removeChild(wrapperDiv);
+        }
+      };
+    } else {
+      return () => {
+        try {
+          const goog = (window as any).google;
+          if (goog?.accounts?.id) goog.accounts.id.cancel();
+        } catch (_) {}
+        if (wrapperDiv && wrapperDiv.parentNode) {
+          wrapperDiv.parentNode.removeChild(wrapperDiv);
+        }
+      };
     }
   }, []);
-
-  const handleGoogleSignIn = () => {
-    const google = (window as any).google;
-    if (!google?.accounts?.id) {
-      setError('Google Sign-In is not ready yet. Please wait a moment.');
-      return;
-    }
-    setError(null);
-    /**
-     * prompt() shows Google's native One Tap / account-chooser UI appended to
-     * document.body — it NEVER injects into our React tree, so there is zero
-     * removeChild conflict.
-     */
-    google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed?.()) {
-        // One Tap suppressed (browser blocks third-party cookies, etc.)
-        // Fall back to the standard OAuth redirect popup
-        const params = new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID,
-          redirect_uri: window.location.origin,
-          response_type: 'token',
-          scope: 'openid email profile',
-          prompt: 'select_account',
-        });
-        const popup = window.open(
-          `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
-          'google-signin',
-          'width=500,height=600,left=200,top=100'
-        );
-        if (!popup) {
-          setError('Popup was blocked. Please allow popups for this site and try again.');
-        }
-      }
-    });
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-primary">
@@ -141,7 +154,7 @@ export default function Login({ onNavigate }: LoginProps) {
 
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-unit-lg z-10">
 
-          {/* ── Attendee Card ── */}
+          {/* Attendee Card */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
               <img
@@ -172,7 +185,7 @@ export default function Login({ onNavigate }: LoginProps) {
             </div>
           </section>
 
-          {/* ── Photographer Card ── */}
+          {/* Photographer Card */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
               <img
@@ -193,31 +206,18 @@ export default function Login({ onNavigate }: LoginProps) {
               </p>
 
               <div className="mt-auto w-full flex flex-col items-center gap-3">
+                {/* Safe container for rendering the Google sign-in button */}
+                <div
+                  ref={googleBtnContainerRef}
+                  className="w-full flex justify-center min-h-[50px]"
+                />
 
-                {/* ── Custom Google Sign-In Button ──
-                    We render our OWN button and call google.accounts.id.prompt().
-                    GIS draws its UI into document.body — never inside our React tree.
-                    This completely eliminates the removeChild DOM conflict. */}
-                <button
-                  id="photographer-signin-btn"
-                  onClick={handleGoogleSignIn}
-                  disabled={!googleReady || signingIn}
-                  className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg shadow transition-all active:scale-95 duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {/* Google "G" logo */}
-                  <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
-                  </svg>
-                  {signingIn
-                    ? 'Signing in…'
-                    : !googleReady
-                    ? 'Loading…'
-                    : 'Sign in with Google'}
-                </button>
+                {signingIn && (
+                  <div className="flex items-center gap-2 text-white/70 text-sm">
+                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                    Signing you in…
+                  </div>
+                )}
 
                 {error && (
                   <div className="flex items-start gap-2 bg-red-500/20 border border-red-400/40 rounded-lg px-4 py-2 text-red-300 text-xs w-full">
