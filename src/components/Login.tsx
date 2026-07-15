@@ -67,6 +67,7 @@ export default function Login({ onNavigate }: LoginProps) {
 
       const btnEl = document.getElementById('google-signin-btn');
       if (btnEl) {
+        // GIS SDK takes full DOM ownership of this element — do NOT put React children inside it
         google.accounts.id.renderButton(btnEl, {
           theme: 'filled_blue',
           size: 'large',
@@ -80,10 +81,25 @@ export default function Login({ onNavigate }: LoginProps) {
       setGoogleLoaded(true);
     };
 
+    // Shared cleanup: cancel GIS and clear container before React unmounts
+    const cleanup = () => {
+      try {
+        const goog = (window as any).google;
+        if (goog?.accounts?.id) {
+          goog.accounts.id.cancel();
+        }
+      } catch (_) { /* ignore */ }
+      const btnEl = document.getElementById('google-signin-btn');
+      if (btnEl) {
+        btnEl.innerHTML = '';
+      }
+    };
+
     // Initialize or wait for GIS SDK to load
     const google = (window as any).google;
     if (google?.accounts?.id) {
       initGoogleSignIn();
+      return cleanup;
     } else {
       const interval = setInterval(() => {
         const googleRetry = (window as any).google;
@@ -100,6 +116,7 @@ export default function Login({ onNavigate }: LoginProps) {
       return () => {
         clearInterval(interval);
         clearTimeout(timeout);
+        cleanup();
       };
     }
   }, [onNavigate]);
@@ -183,18 +200,20 @@ export default function Login({ onNavigate }: LoginProps) {
                 Manage your events and upload photos to let AI handle delivery. We automate the tagging and distribution so you can focus on the art of the shot.
               </p>
               <div className="mt-auto w-full flex flex-col items-center gap-3">
-                {/* Google Sign-In Button rendered by GIS SDK */}
+                {/* Loading spinner — kept OUTSIDE #google-signin-btn to avoid React/GIS DOM conflict */}
+                {!googleLoaded && !error && (
+                  <div className="flex items-center gap-2 text-white/50 text-sm min-h-[50px]">
+                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                    Loading Google Sign-In…
+                  </div>
+                )}
+
+                {/* GIS SDK injects its iframe here — React must NOT render any children inside this div */}
                 <div
                   id="google-signin-btn"
-                  className="w-full flex justify-center min-h-[50px] items-center"
-                >
-                  {!googleLoaded && (
-                    <div className="flex items-center gap-2 text-white/50 text-sm">
-                      <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                      Loading Google Sign-In…
-                    </div>
-                  )}
-                </div>
+                  className="w-full flex justify-center"
+                  style={{ minHeight: googleLoaded ? '50px' : '0px' }}
+                />
 
                 {signingIn && (
                   <div className="flex items-center gap-2 text-white/70 text-sm">
