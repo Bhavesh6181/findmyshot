@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface LoginProps {
   onNavigate: (view: 'landing' | 'login' | 'events' | 'selfie' | 'gallery' | 'photographer-upload' | 'photographer-events') => void;
@@ -7,10 +7,23 @@ interface LoginProps {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
+/** Wipe GIS-injected DOM nodes before React unmounts the container.
+ *  Must be called SYNCHRONOUSLY before any navigation that removes the Login component. */
+function clearGisContainer() {
+  try {
+    const goog = (window as any).google;
+    if (goog?.accounts?.id) goog.accounts.id.cancel();
+  } catch (_) { /* ignore */ }
+  const btnEl = document.getElementById('google-signin-btn');
+  if (btnEl) btnEl.innerHTML = '';
+}
+
 export default function Login({ onNavigate }: LoginProps) {
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Track whether we've already navigated to avoid double-clearing
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
     // Utility to parse/decode Google JWT credentials
@@ -41,7 +54,12 @@ export default function Login({ onNavigate }: LoginProps) {
         localStorage.setItem('user_picture', payload.picture || '');
         localStorage.setItem('user_email', payload.email || '');
         localStorage.setItem('google_token', response.credential);
-        setSigningIn(false);
+
+        // ⚠️ CRITICAL: clear GIS nodes BEFORE React unmounts this component.
+        // If we call onNavigate first, React will try to removeChild GIS-injected
+        // iframe nodes that it doesn't own → NotFoundError crash.
+        navigatedRef.current = true;
+        clearGisContainer();
         onNavigate('photographer-upload');
       } else {
         setSigningIn(false);
@@ -82,17 +100,9 @@ export default function Login({ onNavigate }: LoginProps) {
     };
 
     // Shared cleanup: cancel GIS and clear container before React unmounts
+    // Skip if we already cleared it in handleCredentialResponse before navigating
     const cleanup = () => {
-      try {
-        const goog = (window as any).google;
-        if (goog?.accounts?.id) {
-          goog.accounts.id.cancel();
-        }
-      } catch (_) { /* ignore */ }
-      const btnEl = document.getElementById('google-signin-btn');
-      if (btnEl) {
-        btnEl.innerHTML = '';
-      }
+      if (!navigatedRef.current) clearGisContainer();
     };
 
     // Initialize or wait for GIS SDK to load
