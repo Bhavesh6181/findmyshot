@@ -117,25 +117,18 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
 
     setUploading(true);
 
-    // Initialise all statuses as pending
-    const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'pending' }));
+    // Mark all as uploading immediately so user sees progress
+    const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'uploading' }));
     setUploadStatuses([...statuses]);
 
-    const CONCURRENCY = 20; // upload 20 photos simultaneously for maximum speed
-
+    // Fire ALL uploads simultaneously — backend is async so no need to throttle
     const uploadOne = async (idx: number) => {
       const file = selectedFiles[idx];
-
-      statuses[idx] = { ...statuses[idx], status: 'uploading' };
-      setUploadStatuses([...statuses]);
 
       try {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('eventCode', selectedEventCode);
-
-        statuses[idx] = { ...statuses[idx], status: 'processing' };
-        setUploadStatuses([...statuses]);
 
         const res = await fetch('/api/upload', {
           method: 'POST',
@@ -143,7 +136,6 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
         });
 
         if (!res.ok) {
-          // Read actual error message from server
           let msg = `HTTP ${res.status}`;
           try {
             const errData = await res.json();
@@ -155,10 +147,13 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
         }
 
         const data = await res.json();
+
+        // Backend returns processing=true when face embedding is still running in background
         statuses[idx] = {
           filename: file.name,
-          status: 'done',
-          facesFound: data.facesFound >= 0 ? data.facesFound : 0,
+          // If server signals async processing, show 'processing' badge (not done yet)
+          status: data.processing ? 'processing' : 'done',
+          facesFound: data.facesFound >= 0 ? data.facesFound : undefined,
           url: data.url
         };
       } catch (err: any) {
@@ -169,14 +164,8 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
       setUploadStatuses([...statuses]);
     };
 
-    // Run uploads in parallel batches of CONCURRENCY
-    for (let i = 0; i < selectedFiles.length; i += CONCURRENCY) {
-      const batch = [];
-      for (let j = i; j < Math.min(i + CONCURRENCY, selectedFiles.length); j++) {
-        batch.push(uploadOne(j));
-      }
-      await Promise.all(batch);
-    }
+    // Launch everything at once — true parallel upload
+    await Promise.all(selectedFiles.map((_, idx) => uploadOne(idx)));
 
     setUploading(false);
     loadEvents();
@@ -353,36 +342,48 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
                   </div>
 
                   {/* Upload Status List */}
-                  <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                  {/* Summary bar */}
+                  {uploading || uploadStatuses.some(s => s.status !== 'pending') ? (
+                    <div className="flex gap-3 text-[10px] font-bold mb-2">
+                      <span className="text-emerald-700">{uploadStatuses.filter(s => s.status === 'done').length} done</span>
+                      <span className="text-blue-700">{uploadStatuses.filter(s => s.status === 'processing').length} indexing</span>
+                      <span className="text-amber-700">{uploadStatuses.filter(s => s.status === 'uploading').length} uploading</span>
+                      {uploadStatuses.some(s => s.status === 'error') && (
+                        <span className="text-red-700">{uploadStatuses.filter(s => s.status === 'error').length} failed</span>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="max-h-96 overflow-y-auto space-y-1.5 pr-2">
                     {uploadStatuses.map((status, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant/20 text-xs">
-                        <span className="font-mono text-on-surface-variant truncate max-w-xs">{status.filename}</span>
-                        <div className="flex items-center gap-3">
+                      <div key={idx} className="flex justify-between items-center px-3 py-2 bg-surface-container-low rounded-lg border border-outline-variant/20 text-xs">
+                        <span className="font-mono text-on-surface-variant truncate max-w-[180px]">{status.filename}</span>
+                        <div className="flex items-center gap-2 shrink-0">
                           {status.status === 'done' && (
                             <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold text-[10px]">
-                              Done · {status.facesFound} face{status.facesFound !== 1 ? 's' : ''} detected
+                              ✓ Done
                             </span>
                           )}
                           {status.status === 'uploading' && (
                             <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold text-[10px] animate-pulse">
-                              Uploading...
+                              ↑ Uploading…
                             </span>
                           )}
                           {status.status === 'processing' && (
                             <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold text-[10px] animate-pulse">
-                              Processing faces...
+                              ✓ Uploaded · indexing faces…
                             </span>
                           )}
                           {status.status === 'error' && (
                             <span
-                              className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold text-[10px]"
+                              className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold text-[10px] max-w-[160px] truncate"
                               title={status.errorMsg || 'Upload failed'}
                             >
-                              Error{status.errorMsg ? `: ${status.errorMsg.slice(0, 60)}` : ''}
+                              ✗ {status.errorMsg ? status.errorMsg.slice(0, 40) : 'Failed'}
                             </span>
                           )}
                           {status.status === 'pending' && (
-                            <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                            <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold text-[10px]">
                               Pending
                             </span>
                           )}

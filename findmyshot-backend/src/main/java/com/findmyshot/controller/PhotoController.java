@@ -52,10 +52,10 @@ public class PhotoController {
             );
         }
 
-        // 2. Upload the image directly to Cloudinary
+        // 2. Upload to Cloudinary immediately (fast ~1-2s)
         CloudinaryService.UploadResult uploadResult = cloudinaryService.uploadImage(file, "events/" + eventCode);
 
-        // 3. Prepare the ProcessPhotoRequest
+        // 3. Enqueue face embedding extraction in background — do NOT block the response
         ProcessPhotoRequest request = new ProcessPhotoRequest();
         request.setUrl(uploadResult.getUrl());
         request.setCloudinaryUrl(uploadResult.getUrl());
@@ -63,8 +63,18 @@ public class PhotoController {
         request.setEventCode(eventCode);
         request.setFilename(file.getOriginalFilename());
 
-        // 4. Process the photo through the PhotoService (embeddings + MongoDB entry)
-        return photoService.processPhotoSync(request);
+        String jobId = photoService.enqueuePhotoProcessing(request);
+
+        // 4. Return immediately — face processing continues in background
+        return ProcessPhotoResponse.builder()
+                .success(true)
+                .url(uploadResult.getUrl())
+                .cloudinaryId(uploadResult.getCloudinaryId())
+                .facesFound(-1)      // unknown yet, processing in background
+                .facesDetected(-1)
+                .processing(true)    // signals frontend that embeddings are still running
+                .jobId(jobId)
+                .build();
     }
 
     @GetMapping("/jobs/{jobId}")

@@ -3,6 +3,11 @@ spring:
     active: local
   application:
     name: findmyshot-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
 
 models:
   face-detection-path: models/det_500m.onnx

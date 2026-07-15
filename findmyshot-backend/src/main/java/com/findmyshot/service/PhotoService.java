@@ -45,9 +45,9 @@ public class PhotoService {
     private final MongoTemplate mongoTemplate;
 
     private final Map<String, JobInfo> jobs = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(
-            Math.max(2, Runtime.getRuntime().availableProcessors())
-    );
+    // Large thread pool: most work is I/O-bound (Cloudinary download + MongoDB write)
+    // so many threads can run concurrently even on 1-2 CPU cores
+    private final ExecutorService executorService = Executors.newFixedThreadPool(30);
 
     @Data
     @Builder

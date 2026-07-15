@@ -15,5 +15,9 @@ public class ProcessPhotoResponse {
     private int facesDetected;
     private String url;
     private String cloudinaryId;
+    /** True when face processing is still running in background (async mode). */
+    private boolean processing;
+    /** Job ID for async tracking (optional). */
+    private String jobId;
 }
 
