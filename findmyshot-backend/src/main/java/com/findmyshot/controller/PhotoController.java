@@ -42,19 +42,28 @@ public class PhotoController {
     public ProcessPhotoResponse uploadPhoto(
             @RequestParam("file") MultipartFile file,
             @RequestParam("eventCode") String eventCode) throws IOException {
-        
-        // 1. Upload the image directly to Cloudinary
+
+        // 1. Validate: only image files allowed
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only image files (JPEG, PNG, WEBP, HEIC, etc.) are accepted. Got: " + contentType
+            );
+        }
+
+        // 2. Upload the image directly to Cloudinary
         CloudinaryService.UploadResult uploadResult = cloudinaryService.uploadImage(file, "events/" + eventCode);
-        
-        // 2. Prepare the ProcessPhotoRequest
+
+        // 3. Prepare the ProcessPhotoRequest
         ProcessPhotoRequest request = new ProcessPhotoRequest();
         request.setUrl(uploadResult.getUrl());
         request.setCloudinaryUrl(uploadResult.getUrl());
         request.setCloudinaryId(uploadResult.getCloudinaryId());
         request.setEventCode(eventCode);
         request.setFilename(file.getOriginalFilename());
-        
-        // 3. Process the photo through the PhotoService (embeddings + MongoDB entry)
+
+        // 4. Process the photo through the PhotoService (embeddings + MongoDB entry)
         return photoService.processPhotoSync(request);
     }
 

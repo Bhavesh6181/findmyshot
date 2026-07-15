@@ -90,15 +90,20 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const allFiles = Array.from(e.target.files || []);
     setWarning(null);
 
-    const limit = 200;
-    const acceptedFiles = files.slice(0, limit);
+    // Strict image-only filter (by MIME type)
+    const imageFiles = allFiles.filter(f => f.type.startsWith('image/'));
+    const nonImages = allFiles.length - imageFiles.length;
 
-    if (files.length > limit) {
-      setWarning(`Max ${limit} files allowed per batch. Dropped ${files.length - limit} files.`);
-    }
+    const limit = 200;
+    const acceptedFiles = imageFiles.slice(0, limit);
+
+    const warnings: string[] = [];
+    if (nonImages > 0) warnings.push(`${nonImages} non-image file(s) skipped.`);
+    if (imageFiles.length > limit) warnings.push(`Max ${limit} images allowed per batch. Dropped ${imageFiles.length - limit} extra files.`);
+    if (warnings.length > 0) setWarning(warnings.join(' '));
 
     setSelectedFiles(acceptedFiles);
     setUploadStatuses(acceptedFiles.map(f => ({
@@ -116,7 +121,7 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
     const statuses: PhotoStatus[] = selectedFiles.map(f => ({ filename: f.name, status: 'pending' }));
     setUploadStatuses([...statuses]);
 
-    const CONCURRENCY = 5; // upload 5 photos at a time for maximum speed
+    const CONCURRENCY = 20; // upload 20 photos simultaneously for maximum speed
 
     const uploadOne = async (idx: number) => {
       const file = selectedFiles[idx];
