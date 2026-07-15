@@ -71,17 +71,11 @@ export default function Selfie({ onNavigate, selectedEventCode, selectedEventNam
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Mirror image for natural selfie feel
-    ctx.translate(size, 0);
-    ctx.scale(-1, 1);
-    
+    // Do NOT mirror - capture raw image for accurate face matching
     const offsetX = (video.videoWidth - size) / 2;
     const offsetY = (video.videoHeight - size) / 2;
     
     ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
-    
-    // Reset transform
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
     
     const base64 = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedImage(base64);
@@ -145,41 +139,66 @@ export default function Selfie({ onNavigate, selectedEventCode, selectedEventNam
         </div>
 
         {/* Large Circular Preview */}
-        <div className="relative w-72 h-72 md:w-80 md:h-80 mb-unit-lg">
-          {/* Animated high-tech scanning ring */}
-          <div className={`absolute inset-0 rounded-full border-4 ${cameraState === 'streaming' ? 'border-brand-gold animate-pulse' : 'border-surface-container-high'} shadow-xl overflow-hidden shimmer-border transition-colors duration-300`}>
-            <div className="absolute inset-[4px] bg-surface rounded-full z-10 flex items-center justify-center overflow-hidden">
-              
-              {/* Webcam stream */}
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`w-full h-full object-cover scale-x-[-1] ${cameraState === 'captured' || cameraState === 'error' ? 'hidden' : 'block'}`}
+        <div className="relative mb-unit-lg" style={{width: '288px', height: '288px'}}>
+          {/* Circular camera frame */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: `4px solid ${cameraState === 'streaming' ? '#F59E0B' : '#CBD5E1'}`,
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+              background: '#1a1a2e',
+            }}
+          >
+            {/* Webcam stream - always rendered so ref is attached, hidden via visibility */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: (cameraState === 'captured' || cameraState === 'error') ? 'none' : 'block',
+                transform: 'scaleX(-1)',
+              }}
+            />
+
+            {/* Static Captured Image */}
+            {cameraState === 'captured' && capturedImage && (
+              <img
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                alt="Captured selfie"
+                src={capturedImage}
               />
+            )}
 
-              {/* Static Captured Image */}
-              {cameraState === 'captured' && capturedImage && (
-                <img className="w-full h-full object-cover" alt="Captured selfie" src={capturedImage} />
-              )}
-
-              {/* Fallback Camera loading or error */}
-              {(cameraState === 'idle' || cameraState === 'error') && (
-                <div className="absolute inset-0 bg-white flex flex-col items-center justify-center p-6 text-center text-xs text-on-surface-variant z-20">
-                  <span className="material-symbols-outlined text-4xl mb-2 text-outline">photo_camera</span>
-                  {cameraState === 'idle' ? 'Opening webcam...' : 'Webcam blocked. Please upload a selfie photo below.'}
-                </div>
-              )}
-            </div>
+            {/* Camera loading or error overlay */}
+            {(cameraState === 'idle' || cameraState === 'error') && (
+              <div
+                style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  background: '#0f172a',
+                  color: '#94a3b8',
+                  textAlign: 'center',
+                  padding: '16px',
+                  fontSize: '12px',
+                  zIndex: 10,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '40px', marginBottom: '8px', color: '#64748b' }}>photo_camera</span>
+                {cameraState === 'idle' ? 'Opening camera...' : 'Camera blocked. Please upload a photo below.'}
+              </div>
+            )}
           </div>
-          
-          {/* Scanline overlay effect */}
-          {cameraState === 'streaming' && (
-            <div className="absolute inset-[4px] rounded-full z-20 pointer-events-none overflow-hidden opacity-20">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-gold to-transparent h-24 -top-24 animate-scan"></div>
-            </div>
-          )}
         </div>
 
         {/* Hidden helpers */}
@@ -194,10 +213,16 @@ export default function Selfie({ onNavigate, selectedEventCode, selectedEventNam
 
         {/* Action Buttons */}
         <div className="w-full space-y-3 px-6">
-          {cameraState === 'streaming' && (
+          {(cameraState === 'streaming' || cameraState === 'idle') && (
             <button 
               onClick={handleCapture}
-              className="w-full bg-secondary-container text-on-secondary-container font-bold py-4 rounded-xl shadow-md hover:bg-opacity-90 active:scale-95 duration-150 transition-all flex items-center justify-center gap-2"
+              disabled={cameraState !== 'streaming'}
+              className="w-full font-bold py-4 rounded-xl shadow-md active:scale-95 duration-150 transition-all flex items-center justify-center gap-2"
+              style={{
+                background: cameraState === 'streaming' ? '#F59E0B' : '#d1d5db',
+                color: cameraState === 'streaming' ? '#1a1a1a' : '#9ca3af',
+                cursor: cameraState === 'streaming' ? 'pointer' : 'not-allowed',
+              }}
             >
               <span className="material-symbols-outlined">photo_camera</span>
               Take Selfie
@@ -221,6 +246,17 @@ export default function Selfie({ onNavigate, selectedEventCode, selectedEventNam
                 Retake
               </button>
             </>
+          )}
+
+          {cameraState === 'error' && (
+            <button
+              onClick={startCamera}
+              className="w-full font-bold py-4 rounded-xl shadow-md active:scale-95 duration-150 transition-all flex items-center justify-center gap-2"
+              style={{ background: '#F59E0B', color: '#1a1a1a' }}
+            >
+              <span className="material-symbols-outlined">refresh</span>
+              Retry Camera
+            </button>
           )}
 
           {cameraState !== 'captured' && (
