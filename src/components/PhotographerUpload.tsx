@@ -127,7 +127,6 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
      * 12 in-flight at a time is the sweet spot: fast without self-congestion.
      */
     const MAX_CONCURRENT = 12;
-    let activeCount = 0;
     let nextIdx = 0;
 
     const uploadOne = async (idx: number): Promise<void> => {

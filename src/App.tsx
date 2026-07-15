@@ -1,4 +1,5 @@
-import { useState, Component, ReactNode } from 'react';
+import { useState, Component } from 'react';
+import type { ReactNode } from 'react';
 import Landing from './components/Landing';
 import Login from './components/Login';
 import Events from './components/Events';
