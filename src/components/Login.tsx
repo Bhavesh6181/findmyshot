@@ -1,11 +1,17 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface LoginProps {
   onNavigate: (view: 'landing' | 'login' | 'events' | 'selfie' | 'gallery' | 'photographer-upload' | 'photographer-events') => void;
 }
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
+
 export default function Login({ onNavigate }: LoginProps) {
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     // Utility to parse/decode Google JWT credentials
     const decodeJwt = (token: string) => {
@@ -26,37 +32,55 @@ export default function Login({ onNavigate }: LoginProps) {
     };
 
     const handleCredentialResponse = (response: any) => {
+      setSigningIn(true);
+      setError(null);
       const payload = decodeJwt(response.credential);
       if (payload) {
         localStorage.setItem('role', 'photographer');
-        localStorage.setItem('user_name', payload.name);
-        localStorage.setItem('user_picture', payload.picture);
-        localStorage.setItem('user_email', payload.email);
+        localStorage.setItem('user_name', payload.name || '');
+        localStorage.setItem('user_picture', payload.picture || '');
+        localStorage.setItem('user_email', payload.email || '');
+        localStorage.setItem('google_token', response.credential);
+        setSigningIn(false);
         onNavigate('photographer-upload');
+      } else {
+        setSigningIn(false);
+        setError('Sign-in failed. Please try again.');
       }
     };
 
     const initGoogleSignIn = () => {
       const google = (window as any).google;
-      if (google?.accounts?.id) {
-        google.accounts.id.initialize({
-          client_id: "224813970161-kbai784qvjkpjvvbkg5as9oq7q0sh305.apps.googleusercontent.com",
-          callback: handleCredentialResponse
-        });
-        
-        google.accounts.id.renderButton(
-          document.getElementById("google-signin-btn"),
-          { 
-            theme: "outline", 
-            size: "large", 
-            width: 320,
-            text: "signin_with"
-          }
-        );
+      if (!google?.accounts?.id) return;
+
+      if (!GOOGLE_CLIENT_ID) {
+        console.error('VITE_GOOGLE_CLIENT_ID is not set in environment variables.');
+        return;
       }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      const btnEl = document.getElementById('google-signin-btn');
+      if (btnEl) {
+        google.accounts.id.renderButton(btnEl, {
+          theme: 'filled_blue',
+          size: 'large',
+          shape: 'rectangular',
+          width: 300,
+          text: 'signin_with',
+          logo_alignment: 'center',
+        });
+      }
+
+      setGoogleLoaded(true);
     };
 
-    // Initialize or wait for SDK to load
+    // Initialize or wait for GIS SDK to load
     const google = (window as any).google;
     if (google?.accounts?.id) {
       initGoogleSignIn();
@@ -68,7 +92,15 @@ export default function Login({ onNavigate }: LoginProps) {
           clearInterval(interval);
         }
       }, 200);
-      return () => clearInterval(interval);
+      // Timeout fallback if script never loads
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        setError('Google Sign-In could not load. Check your network and try refreshing.');
+      }, 10000);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
     }
   }, [onNavigate]);
 
@@ -77,7 +109,7 @@ export default function Login({ onNavigate }: LoginProps) {
       {/* TopAppBar */}
       <header className="fixed top-0 w-full z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/20">
         <div className="flex justify-between items-center px-unit-lg h-16 w-full">
-          <div 
+          <div
             onClick={() => onNavigate('landing')}
             className="flex items-center gap-3 cursor-pointer"
           >
@@ -103,10 +135,10 @@ export default function Login({ onNavigate }: LoginProps) {
           {/* Attendee Card */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
-              <img 
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                alt="Joyful group of event attendees" 
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600&h=400" 
+              <img
+                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                alt="Joyful group of event attendees"
+                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600&h=400"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div>
             </div>
@@ -120,7 +152,7 @@ export default function Login({ onNavigate }: LoginProps) {
                 Find your photos from an event by scanning your selfie. No account required. Our facial recognition finds every moment you appear in instantly.
               </p>
               <div className="mt-auto w-full">
-                <button 
+                <button
                   onClick={() => onNavigate('events')}
                   className="gold-glow w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#F59E0B] text-primary font-bold rounded-lg transition-all active:scale-95 duration-150"
                 >
@@ -134,10 +166,10 @@ export default function Login({ onNavigate }: LoginProps) {
           {/* Photographer Card */}
           <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
             <div className="h-48 md:h-56 overflow-hidden relative">
-              <img 
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                alt="Photographer with camera" 
-                src="https://images.unsplash.com/photo-1452780212940-6f5c0d14d84a?auto=format&fit=crop&q=80&w=600&h=400" 
+              <img
+                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                alt="Photographer with camera"
+                src="https://images.unsplash.com/photo-1452780212940-6f5c0d14d84a?auto=format&fit=crop&q=80&w=600&h=400"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent"></div>
             </div>
@@ -151,20 +183,32 @@ export default function Login({ onNavigate }: LoginProps) {
                 Manage your events and upload photos to let AI handle delivery. We automate the tagging and distribution so you can focus on the art of the shot.
               </p>
               <div className="mt-auto w-full flex flex-col items-center gap-3">
-                <div id="google-signin-btn" className="w-full flex justify-center min-h-[50px]"></div>
-                
-                {/* Fallback button in case they block third-party cookies or scripts */}
-                <button 
-                  onClick={() => {
-                    localStorage.setItem('role', 'photographer');
-                    localStorage.setItem('user_name', 'Bhavesh Bhatkudav (Demo)');
-                    localStorage.setItem('user_picture', 'https://lh3.googleusercontent.com/a/ACg8ocL81oA39GqP-v_b6181=s96-c');
-                    onNavigate('photographer-upload');
-                  }}
-                  className="text-center text-white/50 hover:text-white text-[10px] underline transition-colors"
+                {/* Google Sign-In Button rendered by GIS SDK */}
+                <div
+                  id="google-signin-btn"
+                  className="w-full flex justify-center min-h-[50px] items-center"
                 >
-                  Bypass with Mock Google Login
-                </button>
+                  {!googleLoaded && (
+                    <div className="flex items-center gap-2 text-white/50 text-sm">
+                      <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                      Loading Google Sign-In…
+                    </div>
+                  )}
+                </div>
+
+                {signingIn && (
+                  <div className="flex items-center gap-2 text-white/70 text-sm">
+                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                    Signing you in…
+                  </div>
+                )}
+
+                {error && (
+                  <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg px-4 py-2 text-red-300 text-xs w-full">
+                    <span className="material-symbols-outlined text-base shrink-0">error</span>
+                    {error}
+                  </div>
+                )}
               </div>
             </div>
           </section>
