@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
+    strictPort: true,
     proxy: {
       '/events': {
         target: 'http://localhost:8080',

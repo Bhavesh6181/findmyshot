@@ -1,247 +1,304 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface LoginProps {
   onNavigate: (view: 'landing' | 'login' | 'events' | 'selfie' | 'gallery' | 'photographer-upload' | 'photographer-events') => void;
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
-
-function decodeJwt(token: string): Record<string, any> | null {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      window.atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
-
 export default function Login({ onNavigate }: LoginProps) {
-  const [googleReady, setGoogleReady] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const onNavigateRef = useRef(onNavigate);
   onNavigateRef.current = onNavigate;
 
-  const googleBtnContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) {
-      setError('Google Sign-In is not configured.');
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields.');
       return;
     }
-
-    let wrapperDiv: HTMLDivElement | null = null;
-
-    const handleCredentialResponse = (response: any) => {
-      setSigningIn(true);
-      setError(null);
-      const payload = decodeJwt(response.credential);
-      if (payload) {
-        localStorage.setItem('role', 'photographer');
-        localStorage.setItem('user_name', payload.name || '');
-        localStorage.setItem('user_picture', payload.picture || '');
-        localStorage.setItem('user_email', payload.email || '');
-        localStorage.setItem('google_token', response.credential);
-        onNavigateRef.current('photographer-upload');
-      } else {
-        setSigningIn(false);
-        setError('Sign-in failed. Please try again.');
-      }
-    };
-
-    const initAndRender = () => {
-      const google = (window as any).google;
-      if (!google?.accounts?.id) return false;
-
-      // Initialize Google Identity Services
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
-
-      // Render the Google Button safely inside an imperatively created wrapper element
-      if (googleBtnContainerRef.current) {
-        googleBtnContainerRef.current.innerHTML = '';
-        wrapperDiv = document.createElement('div');
-        wrapperDiv.id = 'g-btn-wrapper';
-        googleBtnContainerRef.current.appendChild(wrapperDiv);
-
-        google.accounts.id.renderButton(wrapperDiv, {
-          theme: 'filled_blue',
-          size: 'large',
-          shape: 'rectangular',
-          width: 300,
-          text: 'signin_with',
-          logo_alignment: 'center',
-        });
-      }
-
-      setGoogleReady(true);
-      return true;
-    };
-
-    // Try immediately, poll if script not loaded yet
-    if (!initAndRender()) {
-      const interval = setInterval(() => {
-        if (initAndRender()) clearInterval(interval);
-      }, 200);
-      const timeout = setTimeout(() => {
-        clearInterval(interval);
-        setError('Google Sign-In could not load. Check your network and try again.');
-      }, 10000);
-
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-        // Clean up One Tap and DOM wrapper to prevent React unmount errors
-        try {
-          const goog = (window as any).google;
-          if (goog?.accounts?.id) goog.accounts.id.cancel();
-        } catch (_) {}
-        if (wrapperDiv && wrapperDiv.parentNode) {
-          wrapperDiv.parentNode.removeChild(wrapperDiv);
-        }
-      };
-    } else {
-      return () => {
-        try {
-          const goog = (window as any).google;
-          if (goog?.accounts?.id) goog.accounts.id.cancel();
-        } catch (_) {}
-        if (wrapperDiv && wrapperDiv.parentNode) {
-          wrapperDiv.parentNode.removeChild(wrapperDiv);
-        }
-      };
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
     }
-  }, []);
+    setSigningIn(true);
+    setError(null);
+    setTimeout(() => {
+      localStorage.setItem('role', 'photographer');
+      localStorage.setItem('user_name', name);
+      localStorage.setItem('user_picture', `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`);
+      localStorage.setItem('user_email', email);
+      localStorage.setItem('google_token', 'mock_email_token');
+      setSigningIn(false);
+      onNavigateRef.current('photographer-upload');
+    }, 800);
+  };
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    setSigningIn(true);
+    setError(null);
+    setTimeout(() => {
+      localStorage.setItem('role', 'photographer');
+      const displayName = email.split('@')[0] || 'Photographer';
+      localStorage.setItem('user_name', displayName.charAt(0).toUpperCase() + displayName.slice(1));
+      localStorage.setItem('user_picture', `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName)}`);
+      localStorage.setItem('user_email', email);
+      localStorage.setItem('google_token', 'mock_email_token');
+      setSigningIn(false);
+      onNavigateRef.current('photographer-upload');
+    }, 800);
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-[#0A0F1D] text-white">
       {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-primary/95 backdrop-blur-md border-b border-secondary/20">
-        <div className="flex justify-between items-center px-unit-lg h-16 w-full">
+      <header className="fixed top-0 w-full z-50 bg-[#0A0F1D]/80 backdrop-blur-lg border-b border-white/5">
+        <div className="flex justify-between items-center px-6 h-16 w-full max-w-7xl mx-auto">
           <div
             onClick={() => onNavigate('landing')}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="flex items-center gap-unit-xs">
-              <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>camera_front</span>
-              <span className="font-headline-md text-headline-md font-bold text-secondary">FindMyShot</span>
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#F59E0B] group-hover:rotate-12 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>camera_front</span>
+              <span className="font-headline-md text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">FindMyShot</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-secondary cursor-pointer hover:bg-white/10 transition-colors rounded-full p-2">account_circle</span>
+            <span className="material-symbols-outlined text-white/70 cursor-pointer hover:bg-white/10 hover:text-white transition-all rounded-full p-2">account_circle</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center pt-24 pb-16 px-margin-mobile md:px-margin-desktop relative overflow-hidden">
-        {/* Ambient background */}
-        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary via-transparent to-transparent" />
-        </div>
+      <main className="flex-grow flex items-center justify-center pt-24 pb-16 px-6 relative overflow-hidden">
+        {/* Glow Effects in Background */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-unit-lg z-10">
+        {/* Auth Card */}
+        <div className="max-w-md w-full bg-[#111827]/75 backdrop-blur-xl rounded-3xl border border-white/10 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10 flex flex-col relative">
+          {/* Top Decorative bar */}
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-blue-500 via-amber-400 to-purple-600 rounded-t-3xl" />
 
-          {/* Attendee Card */}
-          <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
-            <div className="h-48 md:h-56 overflow-hidden relative">
-              <img
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                alt="Joyful group of event attendees"
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600&h=400"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent" />
+          <div className="flex flex-col items-center gap-3 mb-8">
+            <div className="bg-gradient-to-br from-amber-400/20 to-amber-500/5 border border-amber-500/30 p-3.5 rounded-2xl text-[#F59E0B] shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
             </div>
-            <div className="p-unit-lg flex flex-col flex-grow items-start">
-              <div className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">face</span>
-                <span className="font-label-sm text-label-sm uppercase tracking-wider">Instant Access</span>
+            <h2 className="text-2xl font-black tracking-tight text-white mt-1">
+              {isSignUp ? 'Join as a Photographer' : 'Photographer Portal'}
+            </h2>
+            <p className="text-sm text-gray-400 text-center px-4 leading-relaxed">
+              {isSignUp 
+                ? 'Create an account to upload shots and let AI deliver them to guests.' 
+                : 'Welcome back! Sign in to manage your premium galleries.'}
+            </p>
+          </div>
+
+          {isSignUp ? (
+            <form onSubmit={handleSignUp} className="flex flex-col gap-4">
+              {/* Full Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Full Name</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">person</span>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                </div>
               </div>
-              <h2 className="font-headline-lg text-2xl font-bold text-white mb-2">Attendee</h2>
-              <p className="font-body-md text-on-primary-container/80 mb-unit-xl">
-                Find your photos from an event by scanning your selfie. No account required. Our facial recognition finds every moment you appear in instantly.
-              </p>
-              <div className="mt-auto w-full">
+
+              {/* Email Address */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Email Address</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">mail</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="photographer@example.com"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Password</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">lock</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-11 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Confirm Password</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">lock</span>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-11 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={signingIn}
+                className="w-full mt-4 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-[#0A0F1D] font-extrabold rounded-xl shadow-[0_4px_20px_rgba(245,158,11,0.2)] hover:shadow-[0_6px_24px_rgba(245,158,11,0.3)] transition-all active:scale-[0.98] duration-150 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {signingIn && <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>}
+                Create Free Account
+              </button>
+
+              <div className="text-center mt-4">
                 <button
-                  onClick={() => onNavigate('events')}
-                  className="gold-glow w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#F59E0B] text-primary font-bold rounded-lg transition-all active:scale-95 duration-150"
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(false);
+                    setError(null);
+                  }}
+                  className="text-sm text-amber-400 hover:text-amber-300 transition-colors font-semibold cursor-pointer"
                 >
-                  <span className="material-symbols-outlined">search</span>
-                  Find My Photos
+                  Already have an account? Sign In
                 </button>
               </div>
-            </div>
-          </section>
-
-          {/* Photographer Card */}
-          <section className="group relative card-hover bg-primary-container rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col text-white">
-            <div className="h-48 md:h-56 overflow-hidden relative">
-              <img
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                alt="Photographer with camera"
-                src="https://images.unsplash.com/photo-1452780212940-6f5c0d14d84a?auto=format&fit=crop&q=80&w=600&h=400"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-transparent to-transparent" />
-            </div>
-            <div className="p-unit-lg flex flex-col flex-grow items-start">
-              <div className="bg-primary text-white border border-secondary/20 px-3 py-1 rounded-full mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">photo_camera</span>
-                <span className="font-label-sm text-label-sm uppercase tracking-wider">Professional Portal</span>
+            </form>
+          ) : (
+            <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+              {/* Email Address */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Email Address</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">mail</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="photographer@example.com"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                </div>
               </div>
-              <h2 className="font-headline-lg text-2xl font-bold text-white mb-2">Photographer</h2>
-              <p className="font-body-md text-on-primary-container/80 mb-unit-xl">
-                Manage your events and upload photos to let AI handle delivery. We automate the tagging and distribution so you can focus on the art of the shot.
-              </p>
 
-              <div className="mt-auto w-full flex flex-col items-center gap-3">
-                {/* Safe container for rendering the Google sign-in button */}
-                <div
-                  ref={googleBtnContainerRef}
-                  className="w-full flex justify-center min-h-[50px]"
-                />
-
-                {signingIn && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm">
-                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                    Signing you in…
-                  </div>
-                )}
-
-                {error && (
-                  <div className="flex items-start gap-2 bg-red-500/20 border border-red-400/40 rounded-lg px-4 py-2 text-red-300 text-xs w-full">
-                    <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
-                    <span>{error}</span>
-                  </div>
-                )}
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-400 tracking-wide uppercase">Password</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xl group-focus-within:text-[#F59E0B] transition-colors">lock</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-11 py-3.5 bg-[#1F2937]/55 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F59E0B] focus:ring-2 focus:ring-[#F59E0B]/10 transition-all"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
               </div>
+
+              <button
+                type="submit"
+                disabled={signingIn}
+                className="w-full mt-4 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-[#0A0F1D] font-extrabold rounded-xl shadow-[0_4px_20px_rgba(245,158,11,0.2)] hover:shadow-[0_6px_24px_rgba(245,158,11,0.3)] transition-all active:scale-[0.98] duration-150 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {signingIn && <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>}
+                Sign In to Dashboard
+              </button>
+
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(true);
+                    setError(null);
+                  }}
+                  className="text-sm text-amber-400 hover:text-amber-300 transition-colors font-semibold cursor-pointer"
+                >
+                  Don't have an account? Sign Up
+                </button>
+              </div>
+            </form>
+          )}
+
+          {error && (
+            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3.5 text-red-400 text-xs w-full mt-5">
+              <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
+              <span>{error}</span>
             </div>
-          </section>
+          )}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-primary dark:bg-primary-container full-width py-unit-lg border-t border-secondary/10">
-        <div className="w-full px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-unit-md max-w-7xl mx-auto">
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <span className="font-headline-md text-headline-md font-bold text-secondary">FindMyShot</span>
-            <p className="font-body-md text-on-primary/65 text-xs">© 2024 FindMyShot. All rights reserved.</p>
+      <footer className="bg-[#0A0F1D] w-full py-6 border-t border-white/5">
+        <div className="w-full px-6 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto text-xs text-gray-500">
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <span className="font-extrabold text-gray-400">FindMyShot</span>
+            <p>© 2024 FindMyShot. All rights reserved.</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-6 text-xs text-on-primary/65">
-            <a className="hover:text-secondary-fixed transition-colors" href="#">Privacy Policy</a>
-            <a className="hover:text-secondary-fixed transition-colors" href="#">Terms of Service</a>
-            <a className="hover:text-secondary-fixed transition-colors" href="#">Help Center</a>
+          <div className="flex flex-wrap justify-center gap-6">
+            <a className="hover:text-gray-300 transition-colors" href="#">Privacy Policy</a>
+            <a className="hover:text-gray-300 transition-colors" href="#">Terms of Service</a>
+            <a className="hover:text-gray-300 transition-colors" href="#">Help Center</a>
           </div>
         </div>
       </footer>

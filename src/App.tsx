@@ -88,8 +88,8 @@ function App() {
   return (
     <div className="w-full min-h-screen bg-background">
       {view === 'landing' && <Landing onNavigate={handleNavigate} />}
-      {view === 'login'   && <Login   onNavigate={handleNavigate} />}
-      {view === 'events'  && (
+      {view === 'login' && <Login onNavigate={handleNavigate} />}
+      {view === 'events' && (
         <Events onNavigate={handleNavigate} onSelectEvent={handleSelectEvent} />
       )}
       {view === 'selfie' && (
