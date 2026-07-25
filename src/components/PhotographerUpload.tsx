@@ -124,9 +124,10 @@ export default function PhotographerUpload({ onNavigate }: PhotographerUploadPro
     /**
      * Semaphore-based concurrency limiter.
      * Firing all 200 at once causes browser TCP connection starvation (max ~6 per domain).
-     * 12 in-flight at a time is the sweet spot: fast without self-congestion.
+     * 3 in-flight at a time is the optimal value for a fractional-vCPU backend:
+     * fewer workers + server-side CPU queue gives better real throughput than flooding.
      */
-    const MAX_CONCURRENT = 12;
+    const MAX_CONCURRENT = 3;
     let nextIdx = 0;
 
     const uploadOne = async (idx: number): Promise<void> => {

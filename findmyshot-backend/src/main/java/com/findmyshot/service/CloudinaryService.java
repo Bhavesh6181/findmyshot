@@ -58,13 +58,22 @@ public class CloudinaryService {
      * Returns an UploadResult containing the secure URL and public ID.
      */
     public UploadResult uploadImage(MultipartFile file, String folder) throws IOException {
+        return uploadImageBytes(file.getBytes(), folder);
+    }
+
+    /**
+     * Uploads raw image bytes to Cloudinary.
+     * Allows the same byte[] read once from MultipartFile to be reused for
+     * both face inference and CDN upload — no temp-file or re-download needed.
+     */
+    public UploadResult uploadImageBytes(byte[] imageBytes, String folder) throws IOException {
         if (cloudinary == null) {
             throw new IllegalStateException("Cloudinary is not configured. Check credentials in configuration.");
         }
 
-        log.debug("Uploading file {} to Cloudinary folder {}", file.getOriginalFilename(), folder);
+        log.debug("Uploading {} bytes to Cloudinary folder {}", imageBytes.length, folder);
         Map<?, ?> result = cloudinary.uploader().upload(
-                file.getBytes(),
+                imageBytes,
                 ObjectUtils.asMap("folder", folder)
         );
 
@@ -74,6 +83,7 @@ public class CloudinaryService {
         log.info("Successfully uploaded image. URL: {}, Cloudinary ID: {}", url, cloudinaryId);
         return new UploadResult(url, cloudinaryId);
     }
+
 
     /**
      * Destroys/deletes an image from Cloudinary using its public ID.

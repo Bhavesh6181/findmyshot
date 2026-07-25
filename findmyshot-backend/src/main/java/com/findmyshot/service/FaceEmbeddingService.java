@@ -62,21 +62,58 @@ public class FaceEmbeddingService {
         log.info("Initializing ONNX models. Detection: {}, Recognition: {}", faceDetectionPath, faceRecognitionPath);
         try {
             this.env = OrtEnvironment.getEnvironment();
-            
-            // Configure sessions
+
+            // Force single-threaded math — on a 0.1-0.5 vCPU container,
+            // intra-op parallelism only adds context-switch overhead.
             OrtSession.SessionOptions detOpts = new OrtSession.SessionOptions();
+            detOpts.setIntraOpNumThreads(1);
+            detOpts.setInterOpNumThreads(1);
+            detOpts.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL);
+            detOpts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT);
             this.detSession = env.createSession(faceDetectionPath, detOpts);
-            log.info("Face detection model loaded successfully. Inputs: {}, Outputs: {}", 
+            log.info("Face detection model loaded. Inputs: {}, Outputs: {}",
                     detSession.getInputNames(), detSession.getOutputNames());
 
             OrtSession.SessionOptions recOpts = new OrtSession.SessionOptions();
+            recOpts.setIntraOpNumThreads(1);
+            recOpts.setInterOpNumThreads(1);
+            recOpts.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL);
+            recOpts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT);
             this.recSession = env.createSession(faceRecognitionPath, recOpts);
-            log.info("Face recognition model loaded successfully. Inputs: {}, Outputs: {}", 
+            log.info("Face recognition model loaded. Inputs: {}, Outputs: {}",
                     recSession.getInputNames(), recSession.getOutputNames());
+
+            warmUp();
 
         } catch (Exception e) {
             log.error("Failed to initialize ONNX sessions", e);
             throw new RuntimeException("ONNX initialization failed", e);
+        }
+    }
+
+    /**
+     * Warm-up: run both sessions once with zeroed tensors so the first real
+     * request doesn't pay model-initialization latency.
+     */
+    private void warmUp() {
+        log.info("Warming up ONNX models...");
+        try {
+            float[] dummyDet = new float[1 * 3 * DET_INPUT_SIZE * DET_INPUT_SIZE];
+            long[] detShape = {1, 3, DET_INPUT_SIZE, DET_INPUT_SIZE};
+            try (OnnxTensor t = OnnxTensor.createTensor(env, FloatBuffer.wrap(dummyDet), detShape)) {
+                String name = detSession.getInputNames().iterator().next();
+                detSession.run(Collections.singletonMap(name, t)).close();
+            }
+
+            float[] dummyRec = new float[1 * 3 * REC_INPUT_SIZE * REC_INPUT_SIZE];
+            long[] recShape = {1, 3, REC_INPUT_SIZE, REC_INPUT_SIZE};
+            try (OnnxTensor t = OnnxTensor.createTensor(env, FloatBuffer.wrap(dummyRec), recShape)) {
+                String name = recSession.getInputNames().iterator().next();
+                recSession.run(Collections.singletonMap(name, t)).close();
+            }
+            log.info("ONNX warm-up complete.");
+        } catch (Exception e) {
+            log.warn("ONNX warm-up failed (non-fatal): {}", e.getMessage());
         }
     }
 
@@ -143,31 +180,52 @@ public class FaceEmbeddingService {
             if (image == null) {
                 throw new IOException("Failed to load image: " + imagePath);
             }
-
-            List<DetectedFace> faces = detectFaces(image, 0.5f);
-            if (faces.isEmpty()) {
-                faces = detectFaces(image, 0.3f);
-            }
-
-            if (faces.isEmpty()) {
-                log.info("No faces detected in image: {}", imagePath);
-                return Collections.emptyList();
-            }
-
-            List<float[]> embeddings = new ArrayList<>();
-            for (DetectedFace face : faces) {
-                float[] embedding = extractEmbedding(image, face);
-                if (embedding != null) {
-                    embeddings.add(embedding);
-                }
-            }
-            log.info("Extracted {} embeddings from image: {}", embeddings.size(), imagePath);
-            return embeddings;
-
+            return extractFromImage(image, imagePath.toString());
         } catch (Exception e) {
             log.error("Error getting all face embeddings for image " + imagePath, e);
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Extracts face embeddings directly from a byte array — avoids the
+     * Cloudinary re-download loop. Called by the upload controller so the
+     * image is read exactly once from the incoming MultipartFile.
+     */
+    public List<float[]> getAllFaceEmbeddingsFromBytes(byte[] imageBytes) {
+        log.debug("Extracting face embeddings from in-memory byte array ({} bytes)", imageBytes.length);
+        try {
+            BufferedImage image = ImageIO.read(new java.io.ByteArrayInputStream(imageBytes));
+            if (image == null) {
+                log.warn("Failed to decode image from byte array");
+                return Collections.emptyList();
+            }
+            return extractFromImage(image, "in-memory");
+        } catch (Exception e) {
+            log.error("Error getting face embeddings from byte array", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /** Shared extraction logic used by both path-based and byte[]-based entry points. */
+    private List<float[]> extractFromImage(BufferedImage image, String label) throws OrtException {
+        List<DetectedFace> faces = detectFaces(image, 0.5f);
+        if (faces.isEmpty()) {
+            faces = detectFaces(image, 0.3f);
+        }
+        if (faces.isEmpty()) {
+            log.info("No faces detected in image: {}", label);
+            return Collections.emptyList();
+        }
+        List<float[]> embeddings = new ArrayList<>();
+        for (DetectedFace face : faces) {
+            float[] embedding = extractEmbedding(image, face);
+            if (embedding != null) {
+                embeddings.add(embedding);
+            }
+        }
+        log.info("Extracted {} embeddings from {}", embeddings.size(), label);
+        return embeddings;
     }
 
     /**

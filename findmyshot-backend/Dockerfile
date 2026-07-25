@@ -28,6 +28,11 @@ ENV SPRING_PROFILES_ACTIVE=production
 ENV PORT=8080
 EXPOSE 8080
 
-# Execute Spring Boot application
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -jar app.jar"]
+# Execute Spring Boot application with JVM flags tuned for a fractional-vCPU
+# cloud container (e.g., Render free/starter tier: ~0.1-0.5 vCPU, 512MB RAM).
+# -XX:ActiveProcessorCount=1  : Pins JVM's own pool sizing (GC, ForkJoinPool) to 1 core
+#                               instead of reading the host's 16-32 core count.
+# -Xmx300m                    : Hard heap limit below container ceiling to avoid OOM kills.
+# -XX:MaxMetaspaceSize=64m    : Bound metaspace; ONNX models load a lot of class data.
+ENTRYPOINT ["sh", "-c", "java -XX:ActiveProcessorCount=1 -Xmx300m -XX:MaxMetaspaceSize=64m -Dserver.port=${PORT} -jar app.jar"]
 
